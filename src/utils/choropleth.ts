@@ -1,9 +1,6 @@
-import { scaleSequential } from 'd3-scale'
-import { interpolateRgb } from 'd3-interpolate'
+import { scaleSequential, type ScaleSequential } from 'd3-scale'
+import { interpolateBlues } from 'd3-scale-chromatic'
 import type { DcRecord } from '../types'
-
-// Blues interpolator matching d3-scale-chromatic interpolateBlues range
-const interpolateBlues = interpolateRgb('#deebf7', '#084594')
 
 // Full-name → abbreviation lookup for react-simple-maps TopoJSON state names
 export const STATE_NAME_TO_ABBR: Record<string, string> = {
@@ -30,6 +27,10 @@ export function buildStateVolumes(records: DcRecord[]): Record<string, number> {
   }, {})
 }
 
+export function buildColorScale(maxVol: number): ScaleSequential<string> {
+  return scaleSequential(interpolateBlues).domain([0, maxVol])
+}
+
 /** Convert "rgb(r, g, b)" string to "#rrggbb" hex string */
 function rgbToHex(rgb: string): string {
   const m = rgb.match(/\d+/g)
@@ -45,10 +46,10 @@ function rgbToHex(rgb: string): string {
 export function getStateColor(
   stateAbbr: string,
   volumes: Record<string, number>,
-  maxVol: number
+  scale: ScaleSequential<string>
 ): string {
+  if (!stateAbbr) return 'var(--panel)'
   const vol = volumes[stateAbbr]
-  if (vol == null || maxVol === 0) return 'var(--panel)'
-  const scale = scaleSequential(interpolateBlues).domain([0, maxVol])
+  if (vol == null) return 'var(--panel)'
   return rgbToHex(scale(vol))
 }

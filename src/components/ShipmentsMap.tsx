@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
 import type { DcRecord, FilterState } from '../types'
-import { buildStateVolumes, getStateColor, STATE_NAME_TO_ABBR } from '../utils/choropleth'
+import { buildStateVolumes, buildColorScale, getStateColor, STATE_NAME_TO_ABBR } from '../utils/choropleth'
 import './ShipmentsMap.css'
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json'
@@ -26,12 +26,15 @@ export function ShipmentsMap({ records, filters, svgRef }: Props) {
   }, [records, filters])
 
   const stateVolumes = useMemo(
-    () => buildStateVolumes(visibleRecords),
-    [visibleRecords]
+    () => filters.showChoropleth ? buildStateVolumes(visibleRecords) : {},
+    [visibleRecords, filters.showChoropleth]
   )
-  const maxVol = useMemo(
-    () => Object.values(stateVolumes).reduce((max, v) => Math.max(max, v), 0),
-    [stateVolumes]
+
+  const colorScale = useMemo(
+    () => filters.showChoropleth ? buildColorScale(
+      Object.values(stateVolumes).reduce((max, v) => Math.max(max, v), 0)
+    ) : null,
+    [stateVolumes, filters.showChoropleth]
   )
 
   return (
@@ -43,31 +46,24 @@ export function ShipmentsMap({ records, filters, svgRef }: Props) {
       >
         <Geographies geography={GEO_URL}>
           {({ geographies }) =>
-            geographies.map(geo => (
-              <Geography
-                key={geo.rsmKey}
-                geography={geo}
-                style={{
-                  default: {
-                    fill: filters.showChoropleth
-                      ? getStateColor(STATE_NAME_TO_ABBR[geo.properties.name as string] ?? '', stateVolumes, maxVol)
-                      : 'var(--panel)',
-                    stroke: 'var(--line)',
-                    strokeWidth: 0.5,
-                    outline: 'none',
-                  },
-                  hover: {
-                    fill: filters.showChoropleth
-                      ? getStateColor(STATE_NAME_TO_ABBR[geo.properties.name as string] ?? '', stateVolumes, maxVol)
-                      : 'var(--panel-soft)',
-                    stroke: 'var(--line)',
-                    strokeWidth: 0.5,
-                    outline: 'none',
-                  },
-                  pressed: { outline: 'none' },
-                }}
-              />
-            ))
+            geographies.map(geo => {
+              const abbr = STATE_NAME_TO_ABBR[geo.properties.name as string]
+              const fill = (filters.showChoropleth && colorScale && abbr)
+                ? getStateColor(abbr, stateVolumes, colorScale)
+                : 'var(--panel)'
+              const hoverFill = filters.showChoropleth ? fill : 'var(--panel-soft)'
+              return (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  style={{
+                    default: { fill, stroke: 'var(--line)', strokeWidth: 0.5, outline: 'none' },
+                    hover:   { fill: hoverFill, stroke: 'var(--line)', strokeWidth: 0.5, outline: 'none' },
+                    pressed: { outline: 'none' },
+                  }}
+                />
+              )
+            })
           }
         </Geographies>
       </ComposableMap>

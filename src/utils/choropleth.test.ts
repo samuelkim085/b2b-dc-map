@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildStateVolumes, getStateColor } from './choropleth'
+import { buildStateVolumes, buildColorScale, getStateColor } from './choropleth'
 import type { DcRecord } from '../types'
 
 const records = [
@@ -18,20 +18,32 @@ describe('buildStateVolumes', () => {
   it('returns empty object for empty records', () => {
     expect(buildStateVolumes([])).toEqual({})
   })
+
+  it('handles single-record input', () => {
+    const vol = buildStateVolumes([{ state: 'TX', pcs2025: 5000 } as DcRecord])
+    expect(vol['TX']).toBe(5000)
+  })
 })
 
 describe('getStateColor', () => {
-  it('returns a hex color string for a known state', () => {
-    const vol = { TX: 150000, CA: 200000 }
-    const color = getStateColor('TX', vol, 200000)
+  it('returns a valid hex color for a known state with volume', () => {
+    const scale = buildColorScale(200000)
+    const color = getStateColor('TX', { TX: 150000 }, scale)
     expect(color).toMatch(/^#[0-9a-f]{6}$/i)
   })
 
   it('returns CSS var fallback for unknown state', () => {
-    expect(getStateColor('AK', {}, 100)).toBe('var(--panel)')
+    const scale = buildColorScale(100)
+    expect(getStateColor('AK', {}, scale)).toBe('var(--panel)')
   })
 
-  it('returns CSS var fallback when maxVol is 0', () => {
-    expect(getStateColor('TX', { TX: 100 }, 0)).toBe('var(--panel)')
+  it('returns CSS var fallback for empty stateAbbr', () => {
+    const scale = buildColorScale(100)
+    expect(getStateColor('', { '': 100 }, scale)).toBe('var(--panel)')
+  })
+
+  it('returns CSS var fallback when vol is null/missing', () => {
+    const scale = buildColorScale(200000)
+    expect(getStateColor('MT', { TX: 100 }, scale)).toBe('var(--panel)')
   })
 })
