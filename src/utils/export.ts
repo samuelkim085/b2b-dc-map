@@ -66,20 +66,35 @@ export async function downloadSvg(svgEl: SVGSVGElement, filename: string): Promi
 }
 
 export async function downloadPng(svgEl: SVGSVGElement, filename: string): Promise<void> {
+  const clone = await cloneForExport(svgEl)
+
+  // Use the SVG viewBox as the source of truth for aspect ratio.
+  // getBoundingClientRect() reflects the container shape (which may differ),
+  // causing non-uniform X/Y scaling that turns circles into ovals.
+  const vb = svgEl.viewBox.baseVal
+  const vbW = vb.width  || 800
+  const vbH = vb.height || 600
+  const canvasW = 1600
+  const canvasH = Math.round(canvasW * vbH / vbW)
+
+  // Set explicit dimensions on the clone so the SVG renderer knows the target size.
+  clone.setAttribute('width',  String(canvasW))
+  clone.setAttribute('height', String(canvasH))
+
   const serializer = new XMLSerializer()
-  const svgStr = applyLightMode(serializer.serializeToString(await cloneForExport(svgEl)))
-  const { width, height } = svgEl.getBoundingClientRect()
-  const scale = Math.max(2, 1600 / width)
+  const svgStr = applyLightMode(serializer.serializeToString(clone))
+
   const canvas = document.createElement('canvas')
-  canvas.width = Math.round(width * scale)
-  canvas.height = Math.round(height * scale)
+  canvas.width  = canvasW
+  canvas.height = canvasH
   const ctx = canvas.getContext('2d')
   if (!ctx) return
+
   const img = new Image()
   img.onload = () => {
     ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+    ctx.fillRect(0, 0, canvasW, canvasH)
+    ctx.drawImage(img, 0, 0, canvasW, canvasH)
     try {
       triggerDownload(canvas.toDataURL('image/png'), `${filename}.png`)
     } catch (e) {
