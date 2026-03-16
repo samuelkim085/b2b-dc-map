@@ -2,7 +2,7 @@
   position: relative;
   flex: 1;
   min-height: 0;
-  background: var(--bg);
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 4px;
   overflow: hidden;

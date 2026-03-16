@@ -58,15 +58,15 @@ export function ShipmentsMap({ records, filters, svgRef }: Props) {
               const abbr = STATE_NAME_TO_ABBR[geo.properties.name as string]
               const fill = (filters.showChoropleth && colorScale && abbr)
                 ? getStateColor(abbr, stateVolumes, colorScale)
-                : 'var(--panel)'
-              const hoverFill = filters.showChoropleth ? fill : 'var(--panel-soft)'
+                : '#e8edf2'
+              const hoverFill = filters.showChoropleth ? fill : '#d0d8e4'
               return (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
                   style={{
-                    default: { fill, stroke: 'var(--line)', strokeWidth: 0.5, outline: 'none' },
-                    hover:   { fill: hoverFill, stroke: 'var(--line)', strokeWidth: 0.5, outline: 'none' },
+                    default: { fill, stroke: '#808080', strokeWidth: 0.5, outline: 'none' },
+                    hover:   { fill: hoverFill, stroke: '#808080', strokeWidth: 0.5, outline: 'none' },
                     pressed: { outline: 'none' },
                   }}
                 />

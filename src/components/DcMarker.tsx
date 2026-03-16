@@ -38,6 +38,7 @@ export function DcMarker({ record, selectedOriginZip: _selectedOriginZip, onHove
             width={LOGO_SIZE}
             height={LOGO_SIZE}
             onError={() => setImgFailed(true)}
+            style={{ pointerEvents: 'none' }}
           />
         ) : (
           <>
