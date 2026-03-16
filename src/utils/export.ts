@@ -51,9 +51,11 @@ export function downloadPng(svgEl: SVGSVGElement, filename: string): void {
   const serializer = new XMLSerializer()
   const svgStr = applyLightMode(serializer.serializeToString(cloneForExport(svgEl)))
   const { width, height } = svgEl.getBoundingClientRect()
+  // Scale up to 2x while preserving the exact aspect ratio of the rendered map
+  const scale = Math.max(2, 1600 / width)
   const canvas = document.createElement('canvas')
-  canvas.width = Math.max(width * 2, 800)
-  canvas.height = Math.max(height * 2, 500)
+  canvas.width = Math.round(width * scale)
+  canvas.height = Math.round(height * scale)
   const ctx = canvas.getContext('2d')
   if (!ctx) return
   const img = new Image()
