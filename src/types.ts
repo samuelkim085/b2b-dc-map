@@ -36,7 +36,7 @@ export const CUSTOMER_MAP: Record<string, string> = {
 
 export const CUSTOMER_COLORS: Record<string, string> = {
   WM: '#0071CE',
-  TG: '#CC0000',
+  TG: '#E8192C',  // Target red (distinct from CVS #CC0000)
   Sally: '#6B2D8B',
   CVS: '#CC0000',
   WG: '#E31837',
