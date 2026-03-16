@@ -1,1 +1,38 @@
-/* styles will be added in Task 11 */
+/* styles will be completed in Task 11 */
+:root {
+  --bg: #0a0a0a;
+  --bg-soft: #111;
+  --panel: #141414;
+  --panel-soft: #1a1a1a;
+  --line: #2a2a2a;
+  --text: #e8e8e8;
+  --muted: #666;
+  --accent: #ff6600;
+  --bad: #cc2200;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  padding: 8px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
