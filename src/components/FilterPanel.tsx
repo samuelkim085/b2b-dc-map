@@ -15,9 +15,10 @@ export function FilterPanel({ filters, onChange, allCustomers, origins, maxVolum
   const set = <K extends keyof FilterState>(key: K, val: FilterState[K]) =>
     onChange({ ...filters, [key]: val })
 
-  const distanceLabel = filters.maxDistance >= maxDistance
+  const clampedDistance = Math.min(filters.maxDistance, maxDistance)
+  const distanceLabel = clampedDistance >= maxDistance
     ? 'All'
-    : `${filters.maxDistance.toLocaleString()} mi`
+    : `${clampedDistance.toLocaleString()} mi`
 
   return (
     <aside className="filter-panel">
@@ -55,7 +56,10 @@ export function FilterPanel({ filters, onChange, allCustomers, origins, maxVolum
           max={maxVolume}
           step={1000}
           value={filters.minVolume}
-          onChange={e => set('minVolume', Number(e.target.value))}
+          disabled={maxVolume === 0}
+          onChange={e => {
+            if (maxVolume > 0) set('minVolume', Number(e.target.value))
+          }}
         />
       </div>
 
@@ -83,6 +87,7 @@ export function FilterPanel({ filters, onChange, allCustomers, origins, maxVolum
               <input
                 type="radio"
                 name="mapStyle"
+                value={style}
                 checked={filters.showChoropleth === (style === 'Choropleth')}
                 onChange={() => set('showChoropleth', style === 'Choropleth')}
               />
