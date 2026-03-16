@@ -19,13 +19,31 @@ function applyLightMode(svgStr: string): string {
   return out
 }
 
-function cloneForExport(svgEl: SVGSVGElement): SVGSVGElement {
-  const clone = svgEl.cloneNode(true) as SVGSVGElement
-  // Remove external <image> elements (Clearbit logos) to avoid tainted canvas
-  clone.querySelectorAll('image').forEach(img => {
-    const href = img.getAttribute('href') || img.getAttribute('xlink:href') || ''
-    if (href.startsWith('http')) img.remove()
+async function toBase64(url: string): Promise<string> {
+  const res = await fetch(url)
+  const blob = await res.blob()
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(blob)
   })
+}
+
+async function cloneForExport(svgEl: SVGSVGElement): Promise<SVGSVGElement> {
+  const clone = svgEl.cloneNode(true) as SVGSVGElement
+  const images = Array.from(clone.querySelectorAll('image'))
+  await Promise.all(images.map(async img => {
+    const href = img.getAttribute('href') || img.getAttribute('xlink:href') || ''
+    if (!href) return
+    if (href.startsWith('http')) { img.remove(); return }
+    try {
+      const dataUrl = await toBase64(href)
+      img.setAttribute('href', dataUrl)
+    } catch {
+      img.remove()
+    }
+  }))
   return clone
 }
 
@@ -38,20 +56,19 @@ export function buildFilename(originLabel: string, date: string): string {
   return `b2b-dc-map-${slug}-${date}`
 }
 
-export function downloadSvg(svgEl: SVGSVGElement, filename: string): void {
+export async function downloadSvg(svgEl: SVGSVGElement, filename: string): Promise<void> {
   const serializer = new XMLSerializer()
-  const svgStr = applyLightMode(serializer.serializeToString(cloneForExport(svgEl)))
+  const svgStr = applyLightMode(serializer.serializeToString(await cloneForExport(svgEl)))
   const blob = new Blob([svgStr], { type: 'image/svg+xml' })
   const url = URL.createObjectURL(blob)
   triggerDownload(url, `${filename}.svg`)
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-export function downloadPng(svgEl: SVGSVGElement, filename: string): void {
+export async function downloadPng(svgEl: SVGSVGElement, filename: string): Promise<void> {
   const serializer = new XMLSerializer()
-  const svgStr = applyLightMode(serializer.serializeToString(cloneForExport(svgEl)))
+  const svgStr = applyLightMode(serializer.serializeToString(await cloneForExport(svgEl)))
   const { width, height } = svgEl.getBoundingClientRect()
-  // Scale up to 2x while preserving the exact aspect ratio of the rendered map
   const scale = Math.max(2, 1600 / width)
   const canvas = document.createElement('canvas')
   canvas.width = Math.round(width * scale)
