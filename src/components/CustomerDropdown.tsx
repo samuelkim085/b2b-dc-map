@@ -13,11 +13,11 @@ export function CustomerDropdown({ allCustomers, selected, onChange }: Props) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const handler = (e: PointerEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    document.addEventListener('pointerdown', handler)
+    return () => document.removeEventListener('pointerdown', handler)
   }, [])
 
   const toggle = (key: string) => {
@@ -31,8 +31,21 @@ export function CustomerDropdown({ allCustomers, selected, onChange }: Props) {
 
   return (
     <div className="customer-dropdown" ref={ref}>
-      <label className="filter-label">CUSTOMERS</label>
-      <div className="dropdown-trigger" onClick={() => setOpen(o => !o)} role="button" tabIndex={0}>
+      <span className="filter-label" aria-hidden="true">CUSTOMERS</span>
+      <div
+        className="dropdown-trigger"
+        onClick={() => setOpen(o => !o)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setOpen(o => !o)
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label="Filter by customer"
+        aria-expanded={open}
+      >
         <div className="tag-list">
           {selected.length === 0 ? (
             <span className="placeholder">All customers</span>
@@ -57,7 +70,7 @@ export function CustomerDropdown({ allCustomers, selected, onChange }: Props) {
       </div>
 
       {open && (
-        <div className="dropdown-menu" role="listbox">
+        <div className="dropdown-menu" role="group" aria-label="Customer selection">
           {allCustomers.map(key => (
             <label key={key} className="dropdown-item">
               <input
@@ -73,8 +86,8 @@ export function CustomerDropdown({ allCustomers, selected, onChange }: Props) {
             </label>
           ))}
           <div className="dropdown-footer">
-            <button onClick={() => onChange([])}>All</button>
-            <button onClick={() => onChange(allCustomers)}>Select All</button>
+            <button onClick={() => { onChange([]); setOpen(false) }}>All</button>
+            <button onClick={() => { onChange(allCustomers); setOpen(false) }}>Select All</button>
           </div>
         </div>
       )}
