@@ -22,10 +22,6 @@ interface Props {
 
 export function ShipmentsMap({ records, filters, svgRef }: Props) {
   const [tooltip, setTooltip] = useState<DcRecord | null>(null)
-  const [failedDomains, setFailedDomains] = useState<Set<string>>(new Set())
-  const handleDomainError = (domain: string) => {
-    setFailedDomains(prev => new Set(prev).add(domain))
-  }
 
   const visibleRecords = useMemo(() => {
     return records.filter(r => {
@@ -84,8 +80,6 @@ export function ShipmentsMap({ records, filters, svgRef }: Props) {
             record={r}
             selectedOriginZip={filters.originZip}
             onHover={setTooltip}
-            failedDomains={failedDomains}
-            onDomainError={handleDomainError}
           />
         ))}
       </ComposableMap>
