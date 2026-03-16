@@ -38,7 +38,7 @@ export const CUSTOMER_COLORS: Record<string, string> = {
   WM: '#0071CE',
   TG: '#CC0000',
   Sally: '#6B2D8B',
-  CVS: '#E31837',
+  CVS: '#CC0000',
   WG: '#E31837',
   Ulta: '#F05A22',
 }
