@@ -2,7 +2,6 @@ import { useRef, useState } from 'react'
 import { useShipmentsData } from './hooks/useShipmentsData'
 import { ShipmentsMap } from './components/ShipmentsMap'
 import type { FilterState } from './types'
-import { KNOWN_ORIGINS } from './types'
 import './index.css'
 
 const DEFAULT_FILTERS: FilterState = {

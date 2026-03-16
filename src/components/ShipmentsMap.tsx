@@ -42,7 +42,7 @@ export function ShipmentsMap({ records, filters, svgRef }: Props) {
                 geography={geo}
                 style={{
                   default: { fill: 'var(--panel)', stroke: 'var(--line)', strokeWidth: 0.5, outline: 'none' },
-                  hover:   { fill: 'var(--panel-soft)', outline: 'none' },
+                  hover:   { fill: 'var(--panel-soft)', stroke: 'var(--line)', strokeWidth: 0.5, outline: 'none' },
                   pressed: { outline: 'none' },
                 }}
               />
