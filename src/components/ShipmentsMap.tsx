@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
 import type { DcRecord, FilterState } from '../types'
+import { buildStateVolumes, getStateColor, STATE_NAME_TO_ABBR } from '../utils/choropleth'
 import './ShipmentsMap.css'
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json'
@@ -24,8 +25,14 @@ export function ShipmentsMap({ records, filters, svgRef }: Props) {
     })
   }, [records, filters])
 
-  // visibleRecords will be used by marker layer in Task 7
-  void visibleRecords
+  const stateVolumes = useMemo(
+    () => buildStateVolumes(visibleRecords),
+    [visibleRecords]
+  )
+  const maxVol = useMemo(
+    () => Object.values(stateVolumes).reduce((max, v) => Math.max(max, v), 0),
+    [stateVolumes]
+  )
 
   return (
     <div className="map-wrap">
@@ -41,8 +48,22 @@ export function ShipmentsMap({ records, filters, svgRef }: Props) {
                 key={geo.rsmKey}
                 geography={geo}
                 style={{
-                  default: { fill: 'var(--panel)', stroke: 'var(--line)', strokeWidth: 0.5, outline: 'none' },
-                  hover:   { fill: 'var(--panel-soft)', stroke: 'var(--line)', strokeWidth: 0.5, outline: 'none' },
+                  default: {
+                    fill: filters.showChoropleth
+                      ? getStateColor(STATE_NAME_TO_ABBR[geo.properties.name as string] ?? '', stateVolumes, maxVol)
+                      : 'var(--panel)',
+                    stroke: 'var(--line)',
+                    strokeWidth: 0.5,
+                    outline: 'none',
+                  },
+                  hover: {
+                    fill: filters.showChoropleth
+                      ? getStateColor(STATE_NAME_TO_ABBR[geo.properties.name as string] ?? '', stateVolumes, maxVol)
+                      : 'var(--panel-soft)',
+                    stroke: 'var(--line)',
+                    strokeWidth: 0.5,
+                    outline: 'none',
+                  },
                   pressed: { outline: 'none' },
                 }}
               />
