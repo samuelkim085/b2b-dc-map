@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
+import { DcMarker } from './DcMarker'
 import type { DcRecord, FilterState } from '../types'
 import { buildStateVolumes, buildColorScale, getStateColor, STATE_NAME_TO_ABBR } from '../utils/choropleth'
 import './ShipmentsMap.css'
@@ -66,6 +67,14 @@ export function ShipmentsMap({ records, filters, svgRef }: Props) {
             })
           }
         </Geographies>
+        {visibleRecords.map((r, i) => (
+          <DcMarker
+            key={`${r.customerKey}-${r.zip}-${i}`}
+            record={r}
+            selectedOriginZip={filters.originZip}
+            onHover={setTooltip}
+          />
+        ))}
       </ComposableMap>
 
       {tooltip && (
