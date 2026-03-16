@@ -10,18 +10,20 @@ export function ExportButton({ svgRef, selectedOrigin }: Props) {
   const today = new Date().toISOString().slice(0, 10)
   const filename = buildFilename(selectedOrigin.label, today)
 
+  const handleSvg = () => {
+    if (svgRef.current) downloadSvg(svgRef.current, filename)
+  }
+
+  const handlePng = () => {
+    if (svgRef.current) downloadPng(svgRef.current, filename)
+  }
+
   return (
     <div className="export-group">
-      <button
-        className="export-btn"
-        onClick={() => svgRef.current && downloadSvg(svgRef.current, filename)}
-      >
+      <button className="export-btn" onClick={handleSvg} title="Download as SVG">
         SVG
       </button>
-      <button
-        className="export-btn"
-        onClick={() => svgRef.current && downloadPng(svgRef.current, filename)}
-      >
+      <button className="export-btn" onClick={handlePng} title="Download as PNG">
         PNG
       </button>
     </div>
