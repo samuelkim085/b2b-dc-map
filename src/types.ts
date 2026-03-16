@@ -32,6 +32,7 @@ export const CUSTOMER_MAP: Record<string, string> = {
   'CVS': 'CVS',
   'Walgreens': 'WG',
   'Ulta': 'Ulta',
+  'H-E-B': 'HEB',
 }
 
 export const CUSTOMER_COLORS: Record<string, string> = {
@@ -41,6 +42,7 @@ export const CUSTOMER_COLORS: Record<string, string> = {
   CVS: '#CC0000',
   WG: '#E31837',
   Ulta: '#F05A22',
+  HEB: '#e31837',   // H-E-B red
 }
 
 export const CUSTOMER_DOMAINS: Record<string, string> = {
@@ -50,6 +52,7 @@ export const CUSTOMER_DOMAINS: Record<string, string> = {
   CVS: 'cvs.com',
   WG: 'walgreens.com',
   Ulta: 'ulta.com',
+  HEB: 'heb.com',
 }
 
 export const KNOWN_ORIGINS: Origin[] = [

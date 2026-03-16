@@ -74,8 +74,7 @@ export function useShipmentsData() {
   }, [])
 
   const origins: Origin[] = KNOWN_ORIGINS
-  const maxVolume = records.reduce((max, r) => Math.max(max, r.pcs2025), 0)
   const allCustomers = [...new Set(records.map(r => r.customerKey))].sort()
 
-  return { records, loading, error, origins, maxVolume, allCustomers }
+  return { records, loading, error, origins, allCustomers }
 }
