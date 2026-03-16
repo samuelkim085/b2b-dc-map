@@ -15,6 +15,10 @@ export function FilterPanel({ filters, onChange, allCustomers, origins, maxVolum
   const set = <K extends keyof FilterState>(key: K, val: FilterState[K]) =>
     onChange({ ...filters, [key]: val })
 
+  const distanceLabel = filters.maxDistance >= maxDistance
+    ? 'All'
+    : `${filters.maxDistance.toLocaleString()} mi`
+
   return (
     <aside className="filter-panel">
       <h2 className="panel-title">FILTERS</h2>
@@ -26,8 +30,9 @@ export function FilterPanel({ filters, onChange, allCustomers, origins, maxVolum
       />
 
       <div className="filter-group">
-        <label className="filter-label">ORIGIN</label>
+        <label className="filter-label" htmlFor="origin-select">ORIGIN</label>
         <select
+          id="origin-select"
           className="filter-select"
           value={filters.originZip}
           onChange={e => set('originZip', e.target.value)}
@@ -39,32 +44,40 @@ export function FilterPanel({ filters, onChange, allCustomers, origins, maxVolum
       </div>
 
       <div className="filter-group">
-        <label className="filter-label">
+        <label className="filter-label" htmlFor="volume-slider">
           MIN VOLUME — {filters.minVolume.toLocaleString()} pcs
         </label>
         <input
-          type="range" className="filter-slider"
-          min={0} max={maxVolume} step={1000}
+          id="volume-slider"
+          type="range"
+          className="filter-slider"
+          min={0}
+          max={maxVolume}
+          step={1000}
           value={filters.minVolume}
           onChange={e => set('minVolume', Number(e.target.value))}
         />
       </div>
 
       <div className="filter-group">
-        <label className="filter-label">
-          MAX DISTANCE — {filters.maxDistance >= maxDistance ? 'All' : `${filters.maxDistance.toLocaleString()} mi`}
+        <label className="filter-label" htmlFor="distance-slider">
+          MAX DISTANCE — {distanceLabel}
         </label>
         <input
-          type="range" className="filter-slider"
-          min={0} max={maxDistance} step={50}
-          value={filters.maxDistance}
+          id="distance-slider"
+          type="range"
+          className="filter-slider"
+          min={0}
+          max={maxDistance}
+          step={50}
+          value={Math.min(filters.maxDistance, maxDistance)}
           onChange={e => set('maxDistance', Number(e.target.value))}
         />
       </div>
 
       <div className="filter-group">
-        <label className="filter-label">MAP STYLE</label>
-        <div className="radio-group">
+        <span className="filter-label">MAP STYLE</span>
+        <div className="radio-group" role="radiogroup" aria-label="Map style">
           {(['Plain', 'Choropleth'] as const).map(style => (
             <label key={style} className="radio-label">
               <input
