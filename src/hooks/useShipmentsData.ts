@@ -28,7 +28,7 @@ export function parseShipmentsCSV(csvText: string, centroids: Centroids): DcReco
       const distances: Record<string, number> = {}
       for (const col of originCols) {
         const val = Number(String(row[col]).replace(/,/g, ''))
-        if (!isNaN(val)) distances[col] = val
+        if (!isNaN(val) && val > 0) distances[col] = val
       }
       return {
         customer: row['delivery'],
@@ -38,7 +38,10 @@ export function parseShipmentsCSV(csvText: string, centroids: Centroids): DcReco
         state: row['dest_state'],
         zip,
         country: row['dest_ctry'],
-        pcs2025: Number(String(row[pcsKey]).replace(/,/g, '')),
+        pcs2025: (() => {
+          const v = Number(String(row[pcsKey] ?? '').replace(/,/g, ''))
+          return isNaN(v) ? 0 : v
+        })(),
         distances,
         lat: centroid?.lat ?? null,
         lon: centroid?.lon ?? null,
@@ -52,7 +55,8 @@ export function useShipmentsData() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/data/shipments.csv')
+    const controller = new AbortController()
+    fetch('/data/shipments.csv', { signal: controller.signal })
       .then(r => {
         if (!r.ok) throw new Error(`Failed to load CSV: ${r.status}`)
         return r.text()
@@ -62,13 +66,15 @@ export function useShipmentsData() {
         setLoading(false)
       })
       .catch(err => {
+        if ((err as Error).name === 'AbortError') return
         setError(String(err))
         setLoading(false)
       })
+    return () => controller.abort()
   }, [])
 
   const origins: Origin[] = KNOWN_ORIGINS
-  const maxVolume = records.length ? Math.max(...records.map(r => r.pcs2025)) : 0
+  const maxVolume = records.reduce((max, r) => Math.max(max, r.pcs2025), 0)
   const allCustomers = [...new Set(records.map(r => r.customerKey))].sort()
 
   return { records, loading, error, origins, maxVolume, allCustomers }
