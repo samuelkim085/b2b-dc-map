@@ -1,9 +1,16 @@
 import { useMemo, useState } from 'react'
-import { ComposableMap, Geographies, Geography } from 'react-simple-maps'
+import { ComposableMap as _ComposableMap, Geographies, Geography } from 'react-simple-maps'
+import type { ComposableMapProps } from 'react-simple-maps'
 import { DcMarker } from './DcMarker'
 import type { DcRecord, FilterState } from '../types'
 import { buildStateVolumes, buildColorScale, getStateColor, STATE_NAME_TO_ABBR } from '../utils/choropleth'
 import './ShipmentsMap.css'
+
+// ComposableMap is a forwardRef component at runtime but @types doesn't declare it —
+// cast to accept ref so we can hand the SVGSVGElement to the export utilities.
+const ComposableMap = _ComposableMap as React.ForwardRefExoticComponent<
+  ComposableMapProps & React.RefAttributes<SVGSVGElement>
+>
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json'
 
