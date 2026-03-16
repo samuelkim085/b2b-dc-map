@@ -45,38 +45,67 @@ export function FilterPanel({ filters, onChange, allCustomers, origins, maxVolum
       </div>
 
       <div className="filter-group">
-        <label className="filter-label" htmlFor="volume-slider">
-          MIN VOLUME — {filters.minVolume.toLocaleString()} pcs
-        </label>
-        <input
-          id="volume-slider"
-          type="range"
-          className="filter-slider"
-          min={0}
-          max={maxVolume}
-          step={1000}
-          value={filters.minVolume}
-          disabled={maxVolume === 0}
-          onChange={e => {
-            if (maxVolume > 0) set('minVolume', Number(e.target.value))
-          }}
-        />
+        <label className="filter-label" htmlFor="volume-slider">MIN VOLUME</label>
+        <div className="slider-row">
+          <input
+            id="volume-slider"
+            type="range"
+            className="filter-slider"
+            min={0}
+            max={maxVolume}
+            step={1000}
+            value={filters.minVolume}
+            disabled={maxVolume === 0}
+            onChange={e => {
+              if (maxVolume > 0) set('minVolume', Number(e.target.value))
+            }}
+          />
+          <input
+            type="number"
+            className="filter-number"
+            min={0}
+            max={maxVolume}
+            step={1000}
+            value={filters.minVolume}
+            disabled={maxVolume === 0}
+            onChange={e => {
+              const v = Math.max(0, Math.min(maxVolume, Number(e.target.value) || 0))
+              set('minVolume', v)
+            }}
+            aria-label="Minimum volume in pieces"
+          />
+        </div>
+        <span className="slider-unit">pcs</span>
       </div>
 
       <div className="filter-group">
-        <label className="filter-label" htmlFor="distance-slider">
-          MAX DISTANCE — {distanceLabel}
-        </label>
-        <input
-          id="distance-slider"
-          type="range"
-          className="filter-slider"
-          min={0}
-          max={maxDistance}
-          step={50}
-          value={Math.min(filters.maxDistance, maxDistance)}
-          onChange={e => set('maxDistance', Number(e.target.value))}
-        />
+        <label className="filter-label" htmlFor="distance-slider">MAX DISTANCE</label>
+        <div className="slider-row">
+          <input
+            id="distance-slider"
+            type="range"
+            className="filter-slider"
+            min={0}
+            max={maxDistance}
+            step={50}
+            value={Math.min(filters.maxDistance, maxDistance)}
+            onChange={e => set('maxDistance', Number(e.target.value))}
+          />
+          <input
+            type="number"
+            className="filter-number"
+            min={0}
+            max={maxDistance}
+            step={50}
+            value={Math.min(filters.maxDistance, maxDistance)}
+            onChange={e => {
+              const v = Math.max(0, Math.min(maxDistance, Number(e.target.value) || 0))
+              set('maxDistance', v)
+            }}
+            aria-label="Maximum distance in miles"
+          />
+        </div>
+        <span className="slider-unit">mi{clampedDistance >= maxDistance ? ' (all)' : ''}</span>
       </div>
 
       <div className="filter-group">

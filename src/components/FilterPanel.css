@@ -41,10 +41,53 @@
   outline: none;
 }
 
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .filter-slider {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   accent-color: var(--accent);
   cursor: pointer;
+}
+
+.filter-number {
+  width: 72px;
+  flex-shrink: 0;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 3px 6px;
+  text-align: right;
+  /* hide browser spin buttons */
+  -moz-appearance: textfield;
+}
+
+.filter-number::-webkit-outer-spin-button,
+.filter-number::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.filter-number:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.filter-number:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.slider-unit {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
 }
 
 .radio-group {
