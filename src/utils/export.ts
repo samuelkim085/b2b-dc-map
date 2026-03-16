@@ -1,3 +1,34 @@
+// CSS variable → light-mode hex replacements applied to all exports.
+// The live app uses a dark bloomberg theme, but exported maps should always
+// be light so they are legible on white backgrounds (print, slides, email).
+const EXPORT_LIGHT_VARS: Record<string, string> = {
+  'var(--panel)':      '#eef0f4',   // state fill — light gray
+  'var(--panel-soft)': '#e0e4eb',   // state hover fill — slightly darker
+  'var(--line)':       '#a8b4be',   // state borders — medium gray
+  'var(--bg)':         '#ffffff',   // map background
+  'var(--text)':       '#1a1a2e',   // any text elements
+  'var(--muted)':      '#6b7280',
+  'var(--accent)':     '#e07b00',   // keep accent readable on white
+}
+
+function applyLightMode(svgStr: string): string {
+  let out = svgStr
+  for (const [varRef, hex] of Object.entries(EXPORT_LIGHT_VARS)) {
+    out = out.split(varRef).join(hex)
+  }
+  return out
+}
+
+function cloneForExport(svgEl: SVGSVGElement): SVGSVGElement {
+  const clone = svgEl.cloneNode(true) as SVGSVGElement
+  // Remove external <image> elements (Clearbit logos) to avoid tainted canvas
+  clone.querySelectorAll('image').forEach(img => {
+    const href = img.getAttribute('href') || img.getAttribute('xlink:href') || ''
+    if (href.startsWith('http')) img.remove()
+  })
+  return clone
+}
+
 export function buildFilename(originLabel: string, date: string): string {
   const slug = originLabel
     .toLowerCase()
@@ -9,30 +40,16 @@ export function buildFilename(originLabel: string, date: string): string {
 
 export function downloadSvg(svgEl: SVGSVGElement, filename: string): void {
   const serializer = new XMLSerializer()
-  const svgStr = serializer.serializeToString(svgEl)
+  const svgStr = applyLightMode(serializer.serializeToString(cloneForExport(svgEl)))
   const blob = new Blob([svgStr], { type: 'image/svg+xml' })
   const url = URL.createObjectURL(blob)
   triggerDownload(url, `${filename}.svg`)
-  // Revoke after a short delay to ensure browser has initiated the download
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 export function downloadPng(svgEl: SVGSVGElement, filename: string): void {
-  // Clone the SVG and replace all external <image> elements with nothing
-  // (removes logo markers) to avoid tainted canvas SecurityError
-  const clone = svgEl.cloneNode(true) as SVGSVGElement
-
-  // Remove all <image> elements that have external hrefs (Clearbit logos)
-  const images = clone.querySelectorAll('image')
-  images.forEach(img => {
-    const href = img.getAttribute('href') || img.getAttribute('xlink:href') || ''
-    if (href.startsWith('http')) {
-      img.remove()
-    }
-  })
-
   const serializer = new XMLSerializer()
-  const svgStr = serializer.serializeToString(clone)
+  const svgStr = applyLightMode(serializer.serializeToString(cloneForExport(svgEl)))
   const { width, height } = svgEl.getBoundingClientRect()
   const canvas = document.createElement('canvas')
   canvas.width = Math.max(width * 2, 800)
@@ -41,7 +58,7 @@ export function downloadPng(svgEl: SVGSVGElement, filename: string): void {
   if (!ctx) return
   const img = new Image()
   img.onload = () => {
-    ctx.fillStyle = '#0a0a0a'
+    ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
     try {
