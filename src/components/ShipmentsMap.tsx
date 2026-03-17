@@ -3,7 +3,8 @@ import { ComposableMap as _ComposableMap, Geographies, Geography } from 'react-s
 import type { ComposableMapProps } from 'react-simple-maps'
 import { DcMarker } from './DcMarker'
 import type { DcRecord, FilterState } from '../types'
-import { buildStateVolumes, buildColorScale, getStateColor, STATE_NAME_TO_ABBR } from '../utils/choropleth'
+import { buildStateVolumes, buildColorScale, getStateColor, STATE_NAME_TO_ABBR, buildAllStateDetails } from '../utils/choropleth'
+import { computeMarkerOffsets } from '../utils/markerLayout'
 import './ShipmentsMap.css'
 
 // ComposableMap is a forwardRef component at runtime but @types doesn't declare it —
@@ -22,20 +23,33 @@ interface Props {
 
 export function ShipmentsMap({ records, filters, svgRef }: Props) {
   const [tooltip, setTooltip] = useState<DcRecord | null>(null)
+  const [hoveredState, setHoveredState] = useState<{ name: string; abbr: string } | null>(null)
 
-  const visibleRecords = useMemo(() => {
+  // Records for choropleth coloring — filtered only by choroplethCustomers
+  const choroplethRecords = useMemo(() => {
+    if (!filters.showChoropleth) return []
+    if (filters.choroplethCustomers.length === 0) return records
+    return records.filter(r => filters.choroplethCustomers.includes(r.customerKey))
+  }, [records, filters.showChoropleth, filters.choroplethCustomers])
+
+  // Records for DC location markers — filtered by dcCustomers + location filters
+  const dcRecords = useMemo(() => {
     return records.filter(r => {
-      if (filters.customers.length > 0 && !filters.customers.includes(r.customerKey)) return false
+      if (filters.dcCustomers.length > 0 && !filters.dcCustomers.includes(r.customerKey)) return false
       if (r.pcs2025 < filters.minVolume) return false
       const dist = r.distances[filters.originZip]
       if (dist != null && dist > filters.maxDistance) return false
       return true
     })
-  }, [records, filters])
+  }, [records, filters.dcCustomers, filters.originZip, filters.minVolume, filters.maxDistance])
+
+  const stateDetailsMap = useMemo(() => buildAllStateDetails(dcRecords), [dcRecords])
+
+  const markerOffsets = useMemo(() => computeMarkerOffsets(dcRecords), [dcRecords])
 
   const stateVolumes = useMemo(
-    () => filters.showChoropleth ? buildStateVolumes(visibleRecords) : {},
-    [visibleRecords, filters.showChoropleth]
+    () => filters.showChoropleth ? buildStateVolumes(choroplethRecords) : {},
+    [choroplethRecords, filters.showChoropleth]
   )
 
   const colorScale = useMemo(
@@ -69,29 +83,50 @@ export function ShipmentsMap({ records, filters, svgRef }: Props) {
                     hover:   { fill: hoverFill, stroke: '#808080', strokeWidth: 0.5, outline: 'none' },
                     pressed: { outline: 'none' },
                   }}
+                  onMouseEnter={() => {
+                    if (abbr && stateDetailsMap[abbr]) setHoveredState({ name: geo.properties.name as string, abbr })
+                  }}
+                  onMouseLeave={() => setHoveredState(null)}
                 />
               )
             })
           }
         </Geographies>
-        {visibleRecords.map((r) => (
+        {dcRecords.map((r) => (
           <DcMarker
             key={`${r.customerKey}-${r.zip}`}
             record={r}
             selectedOriginZip={filters.originZip}
             onHover={setTooltip}
+            offset={markerOffsets.get(`${r.customerKey}-${r.zip}`)}
           />
         ))}
       </ComposableMap>
 
-      {tooltip && (
+      {tooltip ? (
         <div className="map-tooltip">
           <strong>{tooltip.customer}</strong>
           <span>{tooltip.city}, {tooltip.state}</span>
           <span>{tooltip.pcs2025.toLocaleString()} pcs</span>
           <span>{tooltip.distances[filters.originZip]?.toLocaleString() ?? '—'} mi</span>
         </div>
-      )}
+      ) : hoveredState && stateDetailsMap[hoveredState.abbr] && (() => {
+        const sd = stateDetailsMap[hoveredState.abbr]
+        const customers = Object.entries(sd.byCustomer).sort((a, b) => b[1].pcs - a[1].pcs)
+        return (
+          <div className="map-tooltip">
+            <strong>{hoveredState.name} ({hoveredState.abbr})</strong>
+            <span>{sd.totalPcs.toLocaleString()} pcs · {sd.dcCount} DC{sd.dcCount !== 1 ? 's' : ''}</span>
+            <div className="tooltip-divider" />
+            {customers.map(([key, { name, pcs }]) => (
+              <div key={key} className="tooltip-row">
+                <span>{name}</span>
+                <span>{pcs.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        )
+      })()}
     </div>
   )
 }

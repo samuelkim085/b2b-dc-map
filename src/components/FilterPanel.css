@@ -106,3 +106,13 @@
 .radio-label input[type="radio"] {
   accent-color: var(--accent);
 }
+
+.filter-section-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted, #888);
+  padding: 10px 0 4px;
+  border-top: 1px solid var(--border, #ddd);
+  margin-top: 6px;
+}

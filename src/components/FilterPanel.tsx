@@ -70,10 +70,42 @@ export function FilterPanel({ filters, onChange, allCustomers, origins, maxVolum
     <aside className="filter-panel">
       <h2 className="panel-title">FILTERS</h2>
 
+      {/* ── Choropleth Section ── */}
+      <div className="filter-section-header">QTY BY STATE</div>
+
+      <div className="filter-group">
+        <span className="filter-label">MAP STYLE</span>
+        <div className="radio-group" role="radiogroup" aria-label="Map style">
+          {(['Plain', 'Choropleth'] as const).map(style => (
+            <label key={style} className="radio-label">
+              <input
+                type="radio"
+                name="mapStyle"
+                value={style}
+                checked={filters.showChoropleth === (style === 'Choropleth')}
+                onChange={() => set('showChoropleth', style === 'Choropleth')}
+              />
+              {style}
+            </label>
+          ))}
+        </div>
+      </div>
+
       <CustomerDropdown
         allCustomers={allCustomers}
-        selected={filters.customers}
-        onChange={v => set('customers', v)}
+        selected={filters.choroplethCustomers}
+        onChange={v => set('choroplethCustomers', v)}
+        label="QTY CUSTOMER"
+      />
+
+      {/* ── DC Locations Section ── */}
+      <div className="filter-section-header">DC LOCATIONS</div>
+
+      <CustomerDropdown
+        allCustomers={allCustomers}
+        selected={filters.dcCustomers}
+        onChange={v => set('dcCustomers', v)}
+        label="DC CUSTOMER"
       />
 
       <div className="filter-group">
@@ -136,24 +168,6 @@ export function FilterPanel({ filters, onChange, allCustomers, origins, maxVolum
           unit={clampedDistance >= maxDistance ? 'mi (all)' : 'mi'}
           onCommit={v => set('maxDistance', v)}
         />
-      </div>
-
-      <div className="filter-group">
-        <span className="filter-label">MAP STYLE</span>
-        <div className="radio-group" role="radiogroup" aria-label="Map style">
-          {(['Plain', 'Choropleth'] as const).map(style => (
-            <label key={style} className="radio-label">
-              <input
-                type="radio"
-                name="mapStyle"
-                value={style}
-                checked={filters.showChoropleth === (style === 'Choropleth')}
-                onChange={() => set('showChoropleth', style === 'Choropleth')}
-              />
-              {style}
-            </label>
-          ))}
-        </div>
       </div>
     </aside>
   )

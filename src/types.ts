@@ -18,11 +18,15 @@ export interface Origin {
 }
 
 export interface FilterState {
-  customers: string[]       // customerKey values (empty = all)
+  // Choropleth layer (qty by state)
+  choroplethCustomers: string[]  // empty = all customers
+  showChoropleth: boolean        // default true
+
+  // DC Location layer (logo markers)
+  dcCustomers: string[]          // empty = all customers
   originZip: string
   minVolume: number
   maxDistance: number
-  showChoropleth: boolean
 }
 
 export const CUSTOMER_MAP: Record<string, string> = {

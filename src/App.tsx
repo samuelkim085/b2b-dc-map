@@ -8,11 +8,12 @@ import { KNOWN_ORIGINS } from './types'
 import './index.css'
 
 const DEFAULT_FILTERS: FilterState = {
-  customers: [],
+  choroplethCustomers: [],
+  showChoropleth: true,
+  dcCustomers: [],
   originZip: '75238',
   minVolume: 0,
   maxDistance: 9999,
-  showChoropleth: false,
 }
 
 export default function App() {

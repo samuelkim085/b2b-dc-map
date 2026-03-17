@@ -1,5 +1,5 @@
 import { scaleSequential, type ScaleSequential } from 'd3-scale'
-import { interpolateBlues } from 'd3-scale-chromatic'
+import { interpolateGreens } from 'd3-scale-chromatic'
 import type { DcRecord } from '../types'
 
 // Full-name → abbreviation lookup for react-simple-maps TopoJSON state names
@@ -20,6 +20,25 @@ export const STATE_NAME_TO_ABBR: Record<string, string> = {
   'Puerto Rico': 'PR',
 }
 
+export interface StateDetail {
+  totalPcs: number
+  dcCount: number
+  byCustomer: Record<string, { name: string; pcs: number }>
+}
+
+export function buildAllStateDetails(records: DcRecord[]): Record<string, StateDetail> {
+  const result: Record<string, StateDetail> = {}
+  for (const r of records) {
+    if (!result[r.state]) result[r.state] = { totalPcs: 0, dcCount: 0, byCustomer: {} }
+    const sd = result[r.state]
+    sd.totalPcs += r.pcs2025
+    sd.dcCount++
+    if (!sd.byCustomer[r.customerKey]) sd.byCustomer[r.customerKey] = { name: r.customer, pcs: 0 }
+    sd.byCustomer[r.customerKey].pcs += r.pcs2025
+  }
+  return result
+}
+
 export function buildStateVolumes(records: DcRecord[]): Record<string, number> {
   return records.reduce<Record<string, number>>((acc, r) => {
     acc[r.state] = (acc[r.state] ?? 0) + r.pcs2025
@@ -28,7 +47,7 @@ export function buildStateVolumes(records: DcRecord[]): Record<string, number> {
 }
 
 export function buildColorScale(maxVol: number): ScaleSequential<string> {
-  return scaleSequential(interpolateBlues).domain([0, maxVol])
+  return scaleSequential(interpolateGreens).domain([0, maxVol])
 }
 
 /** Convert "rgb(r, g, b)" string to "#rrggbb" hex string */
@@ -48,8 +67,8 @@ export function getStateColor(
   volumes: Record<string, number>,
   scale: ScaleSequential<string>
 ): string {
-  if (!stateAbbr) return 'var(--panel)'
+  if (!stateAbbr) return '#ffffff'
   const vol = volumes[stateAbbr]
-  if (vol == null) return 'var(--panel)'
+  if (vol == null) return '#ffffff'
   return rgbToHex(scale(vol))
 }

@@ -6,9 +6,10 @@ interface Props {
   allCustomers: string[]
   selected: string[]
   onChange: (selected: string[]) => void
+  label?: string
 }
 
-export function CustomerDropdown({ allCustomers, selected, onChange }: Props) {
+export function CustomerDropdown({ allCustomers, selected, onChange, label }: Props) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -31,7 +32,7 @@ export function CustomerDropdown({ allCustomers, selected, onChange }: Props) {
 
   return (
     <div className="customer-dropdown" ref={ref}>
-      <span className="filter-label" aria-hidden="true">CUSTOMERS</span>
+      <span className="filter-label" aria-hidden="true">{label ?? 'CUSTOMERS'}</span>
       <div
         className="dropdown-trigger"
         onClick={() => setOpen(o => !o)}
