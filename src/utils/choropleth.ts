@@ -68,8 +68,8 @@ export function getStateColor(
   volumes: Record<string, number>,
   scale: ScaleSequential<string>
 ): string {
-  if (!stateAbbr) return '#ffffff'
+  if (!stateAbbr) return 'var(--panel)'
   const vol = volumes[stateAbbr]
-  if (vol == null) return '#ffffff'
+  if (vol == null) return 'var(--panel)'
   return rgbToHex(scale(vol))
 }
