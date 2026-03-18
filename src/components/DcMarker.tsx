@@ -9,16 +9,18 @@ interface Props {
   selectedOriginZip: string
   onHover: (record: DcRecord | null) => void
   offset?: [number, number]
+  logoScale?: number    // multiplier on top of LOGO_SCALE constant, default 1.0
+  logoPadding?: number  // px added to hit area padding, default 2 (added to existing 3)
 }
 
-export function DcMarker({ record, selectedOriginZip: _selectedOriginZip, onHover, offset = [0, 0] }: Props) {
+export function DcMarker({ record, selectedOriginZip: _selectedOriginZip, onHover, offset = [0, 0], logoScale = 1.0, logoPadding = 2 }: Props) {
   const [imgFailed, setImgFailed] = useState(false)
 
   if (record.lat == null || record.lon == null) return null
 
   const color = CUSTOMER_COLORS[record.customerKey] ?? '#888888'
   const logoUrl = `/img/${record.customerKey}.png`
-  const h = (LOGO_HEIGHT_BASE[record.customerKey] ?? 20) * LOGO_SCALE
+  const h = (LOGO_HEIGHT_BASE[record.customerKey] ?? 20) * LOGO_SCALE * logoScale
   const aspect = LOGO_ASPECT[record.customerKey] ?? 1.5
   const logoW = h * aspect
   const halfW = logoW / 2
@@ -33,7 +35,7 @@ export function DcMarker({ record, selectedOriginZip: _selectedOriginZip, onHove
         style={{ cursor: 'pointer' }}
       >
         {/* transparent hit area so onMouseEnter fires (image has pointerEvents:none) */}
-        <rect x={-halfW - 3} y={-halfH - 3} width={logoW + 6} height={h + 6} fill="transparent" />
+        <rect x={-halfW - logoPadding} y={-halfH - logoPadding} width={logoW + logoPadding * 2} height={h + logoPadding * 2} fill="transparent" />
         {!imgFailed ? (
           <image
             href={logoUrl}
