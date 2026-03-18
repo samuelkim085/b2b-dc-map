@@ -1,3 +1,4 @@
+import type React from 'react'
 import { ExportButton } from './ExportButton'
 import type { Origin } from '../types'
 
