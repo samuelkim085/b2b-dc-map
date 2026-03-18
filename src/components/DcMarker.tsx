@@ -10,7 +10,7 @@ interface Props {
   onHover: (record: DcRecord | null) => void
   offset?: [number, number]
   logoScale?: number    // multiplier on top of LOGO_SCALE constant, default 1.0
-  logoPadding?: number  // px added to hit area padding, default 2 (added to existing 3)
+  logoPadding?: number  // px padding on each side of the hit area rect, default 2
 }
 
 export function DcMarker({ record, selectedOriginZip: _selectedOriginZip, onHover, offset = [0, 0], logoScale = 1.0, logoPadding = 2 }: Props) {
