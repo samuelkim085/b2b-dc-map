@@ -42,3 +42,11 @@ button,
 input {
   font: inherit;
 }
+
+/* Map-specific vars (bloomberg default) */
+:root {
+  --map-state-default: #1a1a1a;
+  --map-state-hover: #2a2a2a;
+  --map-state-stroke: #444444;
+  --map-bg: #000000;
+}
