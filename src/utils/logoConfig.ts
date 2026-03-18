@@ -24,8 +24,8 @@ export const LOGO_ASPECT: Record<string, number> = {
 };
 
 /** Returns [halfWidth, halfHeight] for a logo in SVG pixel space. */
-export function getLogoHalfDims(customerKey: string): [number, number] {
-  const h = (LOGO_HEIGHT_BASE[customerKey] ?? 20) * LOGO_SCALE;
+export function getLogoHalfDims(customerKey: string, scale = 1.0): [number, number] {
+  const h = (LOGO_HEIGHT_BASE[customerKey] ?? 20) * LOGO_SCALE * scale;
   const w = h * (LOGO_ASPECT[customerKey] ?? 1.5);
   return [w / 2, h / 2];
 }

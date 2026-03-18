@@ -50,7 +50,10 @@ export function ShipmentsMap({ records, filters, settings, svgRef }: Props) {
   }, [records, filters.dcCustomers, filters.originZip, filters.minVolume, filters.maxDistance])
 
   const stateDetailsMap = useMemo(() => buildAllStateDetails(dcRecords), [dcRecords])
-  const markerOffsets = useMemo(() => computeMarkerOffsets(dcRecords), [dcRecords])
+  const markerOffsets = useMemo(
+    () => computeMarkerOffsets(dcRecords, settings.dcLogoScale),
+    [dcRecords, settings.dcLogoScale]
+  )
 
   const stateVolumes = useMemo(
     () => filters.showChoropleth ? buildStateVolumes(choroplethRecords) : {},

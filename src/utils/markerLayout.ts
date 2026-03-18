@@ -34,6 +34,7 @@ const SEPARATION_PADDING = 1
  */
 export function computeMarkerOffsets(
   records: Array<{ customerKey: string; lat: number | null; lon: number | null; zip: string }>,
+  logoScale = 1.0,
 ): Map<string, [number, number]> {
   const projection = geoAlbersUsa()
     .scale(MAP_SCALE)
@@ -66,6 +67,18 @@ export function computeMarkerOffsets(
   // Highest priority first → they never get pushed
   items.sort((a, b) => a.priority - b.priority)
 
+  // Bounding box of all projected marker positions.
+  // Pushed markers are clamped to this box so they can't be displaced into
+  // the ocean or outside the continental US footprint.
+  let bboxMinX = Infinity, bboxMaxX = -Infinity
+  let bboxMinY = Infinity, bboxMaxY = -Infinity
+  for (const item of items) {
+    if (item.px < bboxMinX) bboxMinX = item.px
+    if (item.px > bboxMaxX) bboxMaxX = item.px
+    if (item.py < bboxMinY) bboxMinY = item.py
+    if (item.py > bboxMaxY) bboxMaxY = item.py
+  }
+
   const MAX_PASSES = 40
 
   for (let pass = 0; pass < MAX_PASSES; pass++) {
@@ -79,8 +92,8 @@ export function computeMarkerOffsets(
         const hx = hi.px + hi.dx, hy = hi.py + hi.dy
         const lx = lo.px + lo.dx, ly = lo.py + lo.dy
 
-        const [hhw, hhh] = getLogoHalfDims(hi.key)
-        const [lhw, lhh] = getLogoHalfDims(lo.key)
+        const [hhw, hhh] = getLogoHalfDims(hi.key, logoScale)
+        const [lhw, lhh] = getLogoHalfDims(lo.key, logoScale)
 
         if (!aabbOverlaps(hx, hy, hhw, hhh, lx, ly, lhw, lhh)) continue
 
@@ -113,8 +126,26 @@ export function computeMarkerOffsets(
         const push = dSep - d + SEPARATION_PADDING
         if (push <= 0) continue
 
-        lo.dx += push * dirX
-        lo.dy += push * dirY
+        // Clamp the new position so no marker is pushed off the US landmass.
+        //
+        // Two-layer guard:
+        // 1. Global data bbox — keeps every marker within the bounding box of
+        //    all markers (all DC positions are on US land, so this box is safe).
+        // 2. Coastal direction guard — markers near the western coast (x < 150)
+        //    cannot move further west than their original projection; markers
+        //    near the southern coast (y > 460) cannot move further south; and
+        //    markers near the eastern coast (x > 640) cannot move further east.
+        //    This prevents chain-reaction pushes from displacing coastal DCs
+        //    into the ocean.
+        const rawX = lx + push * dirX
+        const rawY = ly + push * dirY
+        const coastMinX = lo.px < 150 ? lo.px : bboxMinX
+        const coastMaxX = lo.px > 640 ? lo.px : bboxMaxX
+        const coastMaxY = lo.py > 460 ? lo.py : bboxMaxY
+        const newX = Math.max(coastMinX, Math.min(coastMaxX, rawX))
+        const newY = Math.max(bboxMinY, Math.min(coastMaxY, rawY))
+        lo.dx = newX - lo.px
+        lo.dy = newY - lo.py
         changed = true
       }
     }
