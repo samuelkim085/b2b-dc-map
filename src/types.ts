@@ -67,3 +67,33 @@ export const KNOWN_ORIGINS: Origin[] = [
   { zip: '60440', label: 'Bolingbrook, IL' },
   { zip: '30043', label: 'Lawrenceville, GA' },
 ]
+
+export interface AppSettings {
+  appTheme: 'bloomberg' | 'dark' | 'light'
+  choroplethTheme: 'greens' | 'greys'
+  showAlaska: boolean
+  showHawaii: boolean
+  showDcMarkers: boolean
+  showZipDots: boolean
+  dcLogoScale: number
+  logoPadding: number
+  zipDotColor: string
+  zipDotSize: number
+  defaultOriginZip: string
+  defaultMinVolume: number
+}
+
+export const DEFAULT_SETTINGS: AppSettings = {
+  appTheme: 'bloomberg',
+  choroplethTheme: 'greys',
+  showAlaska: false,
+  showHawaii: false,
+  showDcMarkers: true,
+  showZipDots: false,
+  dcLogoScale: 1.0,
+  logoPadding: 2,
+  zipDotColor: '#000000',
+  zipDotSize: 3,
+  defaultOriginZip: '75238',
+  defaultMinVolume: 0,
+}
