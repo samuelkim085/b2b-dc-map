@@ -5,13 +5,14 @@ import { applyTheme } from './hooks/useTheme'
 import { ShipmentsMap } from './components/ShipmentsMap'
 import { FilterPanel } from './components/FilterPanel'
 import { AppBar } from './components/AppBar'
+import { SettingsPage } from './components/SettingsPage'
 import type { FilterState } from './types'
 import { KNOWN_ORIGINS } from './types'
 import './index.css'
 
 export default function App() {
   const { records, loading, error, allCustomers } = useShipmentsData()
-  const { settings } = useSettings()
+  const { settings, setSettings } = useSettings()
   const [view, setView] = useState<'map' | 'settings'>('map')
   const svgRef = useRef<SVGSVGElement | null>(null)
 
@@ -44,10 +45,7 @@ export default function App() {
   if (view === 'settings') {
     return (
       <div className="app-shell">
-        <div style={{ padding: '2rem', color: 'var(--text)' }}>
-          Settings page coming soon...
-          <button onClick={() => setView('map')} style={{ display: 'block', marginTop: '1rem' }}>← Back</button>
-        </div>
+        <SettingsPage settings={settings} onChange={setSettings} onBack={() => setView('map')} />
       </div>
     )
   }
