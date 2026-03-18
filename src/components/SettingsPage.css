@@ -1,7 +1,7 @@
 .settings-root {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   background: var(--bg);
   color: var(--text);
   font-family: 'IBM Plex Mono', monospace;
@@ -211,6 +211,12 @@
 .settings-text-input:focus {
   outline: none;
   border-color: var(--accent);
+}
+
+.settings-section-note {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 0 0 8px 0;
 }
 
 /* Color input */

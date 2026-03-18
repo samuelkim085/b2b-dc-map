@@ -1,7 +1,7 @@
 import { useRef, useState, useMemo, useEffect } from 'react'
 import { useShipmentsData } from './hooks/useShipmentsData'
 import { useSettings } from './hooks/useSettings'
-import { applyTheme } from './hooks/useTheme'
+import { applyTheme } from './utils/theme'
 import { ShipmentsMap } from './components/ShipmentsMap'
 import { FilterPanel } from './components/FilterPanel'
 import { AppBar } from './components/AppBar'

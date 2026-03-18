@@ -149,6 +149,7 @@ export function SettingsPage({ settings, onChange, onBack }: Props) {
         {/* Defaults */}
         <section className="settings-section">
           <h2 className="settings-section-title">Defaults</h2>
+          <p className="settings-section-note">Changes take effect on next page load.</p>
           <div className="settings-row">
             <label className="settings-label">Default origin zip</label>
             <input
