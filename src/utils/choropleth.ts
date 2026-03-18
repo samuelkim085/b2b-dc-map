@@ -48,7 +48,7 @@ export function buildStateVolumes(records: DcRecord[]): Record<string, number> {
 
 export function buildColorScale(maxVol: number, theme: 'greens' | 'greys' = 'greys'): ScaleSequential<string> {
   const interpolator = theme === 'greens' ? interpolateGreens : interpolateGreys
-  return scaleSequential(interpolator).domain([0, maxVol * 1.2])
+  return scaleSequential(interpolator).domain([0, Math.max(maxVol * 1.2, 1)])
 }
 
 /** Convert "rgb(r, g, b)" string to "#rrggbb" hex string */
