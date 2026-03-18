@@ -50,3 +50,26 @@ input {
   --map-state-stroke: #444444;
   --map-bg: #000000;
 }
+
+.app-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-bar-icon-btn {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.app-bar-icon-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
