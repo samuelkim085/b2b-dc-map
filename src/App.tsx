@@ -52,9 +52,6 @@ export default function App() {
     )
   }
 
-  // @ts-expect-error -- settings prop added in Task 5
-  const shipmentsMap = <ShipmentsMap records={records} filters={filters} settings={settings} svgRef={svgRef} />
-
   return (
     <div className="app-shell">
       <AppBar svgRef={svgRef} selectedOrigin={selectedOrigin} onOpenSettings={() => setView('settings')} />
@@ -67,7 +64,7 @@ export default function App() {
           maxVolume={maxVolume}
           maxDistance={maxDistance}
         />
-        {shipmentsMap}
+        <ShipmentsMap records={records} filters={filters} settings={settings} svgRef={svgRef} />
       </div>
     </div>
   )
