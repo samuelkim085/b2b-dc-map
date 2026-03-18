@@ -1,5 +1,5 @@
 import { scaleSequential, type ScaleSequential } from 'd3-scale'
-import { interpolateGreens } from 'd3-scale-chromatic'
+import { interpolateGreens, interpolateGreys } from 'd3-scale-chromatic'
 import type { DcRecord } from '../types'
 
 // Full-name → abbreviation lookup for react-simple-maps TopoJSON state names
@@ -46,8 +46,9 @@ export function buildStateVolumes(records: DcRecord[]): Record<string, number> {
   }, {})
 }
 
-export function buildColorScale(maxVol: number): ScaleSequential<string> {
-  return scaleSequential(interpolateGreens).domain([0, maxVol])
+export function buildColorScale(maxVol: number, theme: 'greens' | 'greys' = 'greys'): ScaleSequential<string> {
+  const interpolator = theme === 'greens' ? interpolateGreens : interpolateGreys
+  return scaleSequential(interpolator).domain([0, maxVol * 1.2])
 }
 
 /** Convert "rgb(r, g, b)" string to "#rrggbb" hex string */
