@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { AppSettings } from '../types'
 import { DEFAULT_SETTINGS } from '../types'
 
@@ -17,12 +17,16 @@ function loadSettings(): AppSettings {
 export function useSettings() {
   const [settings, setSettingsState] = useState<AppSettings>(loadSettings)
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+    } catch {
+      console.warn('[useSettings] Failed to persist settings to localStorage')
+    }
+  }, [settings])
+
   const setSettings = useCallback((update: Partial<AppSettings>) => {
-    setSettingsState(prev => {
-      const next = { ...prev, ...update }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      return next
-    })
+    setSettingsState(prev => ({ ...prev, ...update }))
   }, [])
 
   return { settings, setSettings }
