@@ -125,7 +125,7 @@ export function SettingsPage({ settings, onChange, onBack }: Props) {
             <label className="settings-label">Logo padding</label>
             <div className="settings-slider-row">
               <input type="range" min={0} max={12} step={1} value={settings.logoPadding}
-                onChange={e => onChange({ logoPadding: parseInt(e.target.value) })} />
+                onChange={e => onChange({ logoPadding: parseInt(e.target.value, 10) })} />
               <span className="settings-value">{settings.logoPadding}px</span>
             </div>
           </div>
@@ -138,7 +138,7 @@ export function SettingsPage({ settings, onChange, onBack }: Props) {
             <label className="settings-label">Zip dot size</label>
             <div className="settings-slider-row">
               <input type="range" min={1} max={10} step={1} value={settings.zipDotSize}
-                onChange={e => onChange({ zipDotSize: parseInt(e.target.value) })} />
+                onChange={e => onChange({ zipDotSize: parseInt(e.target.value, 10) })} />
               <span className="settings-value">{settings.zipDotSize}px</span>
             </div>
           </div>
@@ -167,7 +167,7 @@ export function SettingsPage({ settings, onChange, onBack }: Props) {
               min={0}
               step={100}
               value={settings.defaultMinVolume}
-              onChange={e => onChange({ defaultMinVolume: parseInt(e.target.value) || 0 })}
+              onChange={e => onChange({ defaultMinVolume: parseInt(e.target.value, 10) || 0 })}
             />
           </div>
         </section>
