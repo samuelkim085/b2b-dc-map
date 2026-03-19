@@ -88,10 +88,11 @@ describe('computeMarkerOffsets', () => {
     }
     // Large zipDotSize forces heavy repulsion — without land constraint logos would escape
     const result = computeMarkerOffsets([A, B, C], 1.0, 15, tinyBox)
-    // With proper land constraint, all offsets must be small
-    // (a 1° box ≈ ~80px wide in AlbersUSA at scale 1070)
+    // With proper land constraint, all offsets must be small.
+    // Unconstrained max with zipDotSize=15 is ~44.5px; threshold set to 40% of that (~18px).
+    // After geoContains is implemented (1° box ≈ ~14px wide), logos stay within ~7px of home.
     for (const [, [dx, dy]] of result) {
-      expect(Math.sqrt(dx * dx + dy * dy)).toBeLessThan(80)
+      expect(Math.sqrt(dx * dx + dy * dy)).toBeLessThan(18)
     }
   })
 })
