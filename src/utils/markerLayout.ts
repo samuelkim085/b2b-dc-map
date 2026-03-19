@@ -1,4 +1,4 @@
-import { geoAlbersUsa } from 'd3-geo'
+import { geoAlbersUsa, geoContains } from 'd3-geo'
 import { getLogoHalfDims } from './logoConfig'
 
 const PRIORITY_ORDER = ['WM', 'TG', 'Sally', 'Ulta', 'CVS', 'WG', 'HEB']
@@ -18,6 +18,18 @@ const DOT_REPULSION      = 4.0
 const SEPARATION_PADDING = 2
 const MAX_ITER           = 200
 const CONVERGENCE_EPS    = 0.05
+
+function isOnLand(
+  x: number,
+  y: number,
+  projection: ReturnType<typeof geoAlbersUsa>,
+  usLandFeature?: object | null,
+): boolean {
+  const coord = projection.invert?.([x, y])
+  if (!coord) return false
+  if (usLandFeature) return geoContains(usLandFeature as Parameters<typeof geoContains>[0], coord)
+  return true
+}
 
 /**
  * Computes per-marker (dx, dy) SVG offsets using a force-directed physics loop.
@@ -39,6 +51,7 @@ export function computeMarkerOffsets(
   records: Array<{ customerKey: string; lat: number | null; lon: number | null; zip: string }>,
   logoScale = 1.0,
   zipDotSize = 0,
+  usLandFeature?: object | null,
 ): Map<string, [number, number]> {
   const projection = geoAlbersUsa()
     .scale(MAP_SCALE)
@@ -160,13 +173,13 @@ export function computeMarkerOffsets(
       const newY = p.y + p.vy
 
       // Validate each axis independently
-      const bothOk = projection.invert?.([newX, newY]) != null
+      const bothOk = isOnLand(newX, newY, projection, usLandFeature)
       if (bothOk) {
         p.x = newX
         p.y = newY
       } else {
-        const xOk = projection.invert?.([newX, p.y]) != null
-        const yOk = projection.invert?.([p.x, newY]) != null
+        const xOk = isOnLand(newX, p.y, projection, usLandFeature)
+        const yOk = isOnLand(p.x, newY, projection, usLandFeature)
         if (xOk) p.x = newX; else p.vx = 0
         if (yOk) p.y = newY; else p.vy = 0
       }

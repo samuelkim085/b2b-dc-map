@@ -80,8 +80,9 @@ describe('computeMarkerOffsets', () => {
       type: 'Feature' as const,
       geometry: {
         type: 'Polygon' as const,
+        // Counter-clockwise winding (right-hand rule) so geoContains treats interior as "in"
         coordinates: [[
-          [-97.2, 32.4], [-96.2, 32.4], [-96.2, 33.4], [-97.2, 33.4], [-97.2, 32.4],
+          [-97.2, 32.4], [-97.2, 33.4], [-96.2, 33.4], [-96.2, 32.4], [-97.2, 32.4],
         ]],
       },
       properties: {},
