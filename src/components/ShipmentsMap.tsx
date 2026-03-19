@@ -51,8 +51,12 @@ export function ShipmentsMap({ records, filters, settings, svgRef }: Props) {
 
   const stateDetailsMap = useMemo(() => buildAllStateDetails(dcRecords), [dcRecords])
   const markerOffsets = useMemo(
-    () => computeMarkerOffsets(dcRecords, settings.dcLogoScale),
-    [dcRecords, settings.dcLogoScale]
+    () => computeMarkerOffsets(
+      dcRecords,
+      settings.dcLogoScale,
+      settings.showZipDots ? settings.zipDotSize : 0,
+    ),
+    [dcRecords, settings.dcLogoScale, settings.showZipDots, settings.zipDotSize]
   )
 
   const stateVolumes = useMemo(
