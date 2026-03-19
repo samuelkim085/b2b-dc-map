@@ -18,7 +18,7 @@ describe('computeMarkerOffsets', () => {
     const [adx, ady] = result.get('WM-75238')!
     const [bdx, bdy] = result.get('TG-75001')!
     const dist = Math.sqrt((adx - bdx) ** 2 + (ady - bdy) ** 2)
-    expect(dist).toBeGreaterThan(0)
+    expect(dist).toBeGreaterThan(10)
   })
 
   it('high-priority logo (WM) stays closer to home than low-priority (TG)', () => {
@@ -34,7 +34,7 @@ describe('computeMarkerOffsets', () => {
     const result = computeMarkerOffsets([A], 1.0, 5)
     const [dx, dy] = result.get('WM-75238')!
     const dist = Math.sqrt(dx ** 2 + dy ** 2)
-    expect(dist).toBeGreaterThan(0)
+    expect(dist).toBeGreaterThan(0.5)
   })
 
   it('logos stay on land (offsets are not wildly large)', () => {
