@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import * as topojson from 'topojson-client'
 import { ComposableMap as _ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps'
 import type { ComposableMapProps } from 'react-simple-maps'
 import { DcMarker } from './DcMarker'
@@ -23,6 +24,20 @@ interface Props {
 export function ShipmentsMap({ records, filters, settings, svgRef }: Props) {
   const [tooltip, setTooltip] = useState<DcRecord | null>(null)
   const [hoveredState, setHoveredState] = useState<{ name: string; abbr: string } | null>(null)
+  const [usLandFeature, setUsLandFeature] = useState<object | null>(null)
+
+  useEffect(() => {
+    fetch(GEO_URL)
+      .then(r => r.json())
+      .then((topo) => {
+        // Merge all state geometries into one MultiPolygon for land containment checks
+        const merged = topojson.merge(topo, topo.objects.states.geometries)
+        setUsLandFeature(merged)
+      })
+      .catch(() => {
+        console.warn('[ShipmentsMap] Failed to fetch TopoJSON for land constraint')
+      })
+  }, [])
 
   const excludedRegions = useMemo(() => {
     const s = new Set<string>()
@@ -55,8 +70,9 @@ export function ShipmentsMap({ records, filters, settings, svgRef }: Props) {
       dcRecords,
       settings.dcLogoScale,
       settings.showZipDots ? settings.zipDotSize : 0,
+      usLandFeature,
     ),
-    [dcRecords, settings.dcLogoScale, settings.showZipDots, settings.zipDotSize]
+    [dcRecords, settings.dcLogoScale, settings.showZipDots, settings.zipDotSize, usLandFeature]
   )
 
   const stateVolumes = useMemo(
