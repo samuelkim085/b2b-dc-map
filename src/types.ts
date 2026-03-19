@@ -92,7 +92,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showZipDots: false,
   dcLogoScale: 1.0,
   logoPadding: 2,
-  zipDotColor: '#000000',
+  zipDotColor: '#ffffff',
   zipDotSize: 3,
   defaultOriginZip: '75238',
   defaultMinVolume: 0,
