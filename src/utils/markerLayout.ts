@@ -39,13 +39,16 @@ function isOnLand(
  *   2. Logo-zipDot repulsion      — all logos move away from all dot positions
  *   3. Home spring attraction     — weak pull back toward projected DC coordinate
  *
- * After each velocity step, projection.invert() validates the new position is
- * within the US landmass. Motion along any axis that escapes the projection is
- * cancelled and velocity zeroed for that axis.
+ * After each velocity step, `isOnLand()` validates the new position. When
+ * `usLandFeature` is provided, it uses `geoContains()` against the actual US
+ * state polygons; otherwise it falls back to checking `projection.invert() != null`.
+ * Motion along any axis that leaves valid land is cancelled and velocity zeroed.
  *
- * @param records    DC records to place
- * @param logoScale  scale factor applied to logo dimensions
- * @param zipDotSize radius of zip dot circles (0 = skip dot avoidance)
+ * @param records      DC records to place
+ * @param logoScale    scale factor applied to logo dimensions
+ * @param zipDotSize   radius of zip dot circles (0 = skip dot avoidance)
+ * @param usLandFeature  GeoJSON geometry/feature for land containment check;
+ *                       omit or pass null to fall back to projection bounds only
  */
 export function computeMarkerOffsets(
   records: Array<{ customerKey: string; lat: number | null; lon: number | null; zip: string }>,
