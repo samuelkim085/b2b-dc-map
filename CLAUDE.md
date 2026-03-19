@@ -39,7 +39,7 @@ React + TypeScript + Vite geospatial app visualizing B2B distribution center (DC
 ### Key Utilities
 
 - **`markerLayout.ts`** — AABB collision detection prevents DC logo markers from overlapping on the map. Priority order `['WM', 'TG', 'Sally', 'Ulta', 'CVS', 'WG', 'HEB']` keeps high-priority markers fixed and pushes lower-priority ones radially outward.
-- **`choropleth.ts`** — D3 sequential color scale built from aggregated state shipment volumes; also computes per-state customer detail for hover tooltips.
+- **`choropleth.ts`** — D3 sequential color scale built from aggregated state shipment volumes; also computes per-state customer detail for hover tooltips. `getStateColor` uses `volumes[abbr] ?? 0` so states with no data map to `scale(0)` = white — **do not return `var(--panel)` as a default here**, it appears black in bloomberg/dark themes.
 - **`export.ts`** — SVG/PNG download; substitutes CSS variable values with light-mode equivalents so exports are always readable.
 - **`theme.ts`** — Sets `data-theme` attribute on document root; CSS variables in `src/styles/themes.css` do the rest.
 - **`logoConfig.ts`** — Per-customer logo dimensions and aspect ratios used by the marker layout solver.
@@ -47,6 +47,12 @@ React + TypeScript + Vite geospatial app visualizing B2B distribution center (DC
 ### Theme System
 
 Three themes: `bloomberg` (default), `dark`, `light`. All color tokens are CSS variables (`--panel`, `--bg`, `--text`, `--accent`, `--map-state-*`, etc.) defined in `src/styles/themes.css`. Applied by `useTheme` hook via `data-theme` attribute.
+
+`bloomberg` theme is the default (`:root` in `bloomberg.css`, no `data-theme` attribute). `--panel` is `#0b0b0b` in bloomberg and `#1c2333` in dark — both near-black. Avoid using `var(--panel)` as a fill color for map states in the choropleth path.
+
+### Dev Server
+
+Port 5173 may fail with `EACCES` on Windows. Use `npx vite --port 3000 --host` as a fallback.
 
 ### Test Setup
 

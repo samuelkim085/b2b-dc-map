@@ -63,7 +63,7 @@ export function ShipmentsMap({ records, filters, settings, svgRef }: Props) {
   const colorScale = useMemo(
     () => filters.showChoropleth ? buildColorScale(
       Object.values(stateVolumes).reduce((max, v) => Math.max(max, v), 0),
-      settings.choroplethTheme
+      settings.choroplethTheme,
     ) : null,
     [stateVolumes, filters.showChoropleth, settings.choroplethTheme]
   )
