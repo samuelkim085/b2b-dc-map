@@ -59,4 +59,39 @@ describe('computeMarkerOffsets', () => {
     const result = computeMarkerOffsets([bad], 1.0, 0)
     expect(result.has('WM-00000')).toBe(false)
   })
+
+  it('accepts optional 4th usLandFeature argument without error', () => {
+    const feature = {
+      type: 'Feature' as const,
+      geometry: {
+        type: 'Polygon' as const,
+        coordinates: [[[-110, 20], [-70, 20], [-70, 50], [-110, 50], [-110, 20]]],
+      },
+      properties: {},
+    }
+    // Broad box covering all test coords — result should be same as without feature
+    const result = computeMarkerOffsets([A, B], 1.0, 0, feature)
+    expect(result.size).toBe(2)
+  })
+
+  it('with restrictive usLandFeature, logos cannot escape the boundary', () => {
+    // Tiny 1-degree box around Dallas — logos have almost no room to move
+    const tinyBox = {
+      type: 'Feature' as const,
+      geometry: {
+        type: 'Polygon' as const,
+        coordinates: [[
+          [-97.2, 32.4], [-96.2, 32.4], [-96.2, 33.4], [-97.2, 33.4], [-97.2, 32.4],
+        ]],
+      },
+      properties: {},
+    }
+    // Large zipDotSize forces heavy repulsion — without land constraint logos would escape
+    const result = computeMarkerOffsets([A, B, C], 1.0, 15, tinyBox)
+    // With proper land constraint, all offsets must be small
+    // (a 1° box ≈ ~80px wide in AlbersUSA at scale 1070)
+    for (const [, [dx, dy]] of result) {
+      expect(Math.sqrt(dx * dx + dy * dy)).toBeLessThan(80)
+    }
+  })
 })
