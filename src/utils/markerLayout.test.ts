@@ -30,6 +30,15 @@ describe('computeMarkerOffsets', () => {
     expect(distA).toBeLessThanOrEqual(distB)
   })
 
+  it('priority ordering holds regardless of input order (TG before WM)', () => {
+    const result = computeMarkerOffsets([B, A], 1.0, 0)
+    const [adx, ady] = result.get('WM-75238')!
+    const [bdx, bdy] = result.get('TG-75001')!
+    const distA = Math.sqrt(adx ** 2 + ady ** 2)
+    const distB = Math.sqrt(bdx ** 2 + bdy ** 2)
+    expect(distA).toBeLessThanOrEqual(distB)
+  })
+
   it('with zipDotSize > 0, logos move away from dot positions', () => {
     const result = computeMarkerOffsets([A], 1.0, 5)
     const [dx, dy] = result.get('WM-75238')!

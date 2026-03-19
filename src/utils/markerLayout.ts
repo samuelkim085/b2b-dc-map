@@ -9,7 +9,6 @@ function getPriority(key: string): number {
 }
 
 const MAP_WIDTH  = 800
-const MAP_HEIGHT = 600
 const MAP_SCALE  = 1070
 
 const DAMPING            = 0.85
@@ -23,7 +22,7 @@ const CONVERGENCE_EPS    = 0.05
 /**
  * Computes per-marker (dx, dy) SVG offsets using a force-directed physics loop.
  *
- * Forces per iteration (applied to movable logos only):
+ * Forces per iteration:
  *   1. Logo-logo AABB repulsion   — priority-ordered (high priority stays fixed)
  *   2. Logo-zipDot repulsion      — all logos move away from all dot positions
  *   3. Home spring attraction     — weak pull back toward projected DC coordinate
@@ -43,7 +42,7 @@ export function computeMarkerOffsets(
 ): Map<string, [number, number]> {
   const projection = geoAlbersUsa()
     .scale(MAP_SCALE)
-    .translate([MAP_WIDTH / 2, MAP_HEIGHT / 2])
+    .translate([MAP_WIDTH / 2, 300])
 
   type Particle = {
     id: string
@@ -71,6 +70,8 @@ export function computeMarkerOffsets(
       priority: getPriority(r.customerKey),
     })
   }
+
+  particles.sort((a, b) => a.priority - b.priority)
 
   // Zip dot positions = deduplicated projected home coordinates of all records.
   // Deduplication prevents duplicate DCs at the same ZIP from multiplying repulsion force.
