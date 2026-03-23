@@ -297,6 +297,7 @@ export function ShipmentsMap({
                 offset={markerOffsets.get(`${r.customerKey}-${r.zip}`)}
                 logoScale={settings.dcLogoScale}
                 logoPadding={settings.logoPadding}
+                k={zk}
               />
             ))}
         </g>
