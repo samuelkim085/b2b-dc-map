@@ -104,7 +104,7 @@ export function ShipmentsMap({
       svg.on('.zoom', null)
       svgEl.removeEventListener('wheel', preventScroll)
     }
-  }, [svgRef])
+  }, [])
 
   const excludedRegions = useMemo(() => {
     const s = new Set<string>();

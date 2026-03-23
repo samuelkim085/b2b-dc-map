@@ -308,6 +308,7 @@ export function FlowLayer({
                   className="flow-label"
                   textAnchor="middle"
                   dominantBaseline="middle"
+                  fontSize={9 / k}
                   style={{ pointerEvents: "none" }}
                 >
                   {route.label}
