@@ -275,6 +275,7 @@ export function ShipmentsMap({
               flowOpacity={flowSettings.flowOpacity}
               flowWidthScale={flowSettings.flowWidthScale}
               showLabels={flowSettings.showFlowLabels}
+              k={zk}
               onHover={(route) => {
                 setHoveredFlowRoute(route);
                 if (route) {
