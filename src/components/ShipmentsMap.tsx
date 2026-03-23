@@ -190,6 +190,8 @@ export function ShipmentsMap({
   const defaultStateHover = "var(--map-state-hover, #d0d8e4)";
   const stateStroke = "var(--map-state-stroke, #808080)";
 
+  const { x: zx, y: zy, k: zk } = zoomXform;
+
   return (
     <div className="map-wrap">
       <ComposableMap
@@ -197,105 +199,107 @@ export function ShipmentsMap({
         projection="geoAlbersUsa"
         style={{ width: "100%", height: "100%" }}
       >
-        {topoData && (
-          <Geographies geography={topoData}>
-            {({ geographies }) =>
-              geographies
-                .filter(
-                  (geo) => !excludedRegions.has(geo.properties.name as string),
-                )
-                .map((geo) => {
-                  const abbr =
-                    STATE_NAME_TO_ABBR[geo.properties.name as string];
-                  const fill =
-                    filters.showChoropleth && colorScale && abbr
-                      ? getStateColor(abbr, stateVolumes, colorScale)
-                      : defaultStateFill;
-                  const hoverFill = filters.showChoropleth
-                    ? fill
-                    : defaultStateHover;
-                  return (
-                    <Geography
-                      key={geo.rsmKey}
-                      geography={geo}
-                      style={{
-                        default: {
-                          fill,
-                          stroke: stateStroke,
-                          strokeWidth: 0.5,
-                          outline: "none",
-                        },
-                        hover: {
-                          fill: hoverFill,
-                          stroke: stateStroke,
-                          strokeWidth: 0.5,
-                          outline: "none",
-                        },
-                        pressed: { outline: "none" },
-                      }}
-                      onMouseEnter={() => {
-                        if (abbr && stateDetailsMap[abbr])
-                          setHoveredState({
-                            name: geo.properties.name as string,
-                            abbr,
-                          });
-                      }}
-                      onMouseLeave={() => setHoveredState(null)}
-                    />
-                  );
-                })
-            }
-          </Geographies>
-        )}
-
-        {settings.showZipDots &&
-          dcRecords
-            .filter((r) => r.lat != null && r.lon != null)
-            .map((r) => (
-              <Marker
-                key={`dot-${r.customerKey}-${r.zip}`}
-                coordinates={[r.lon!, r.lat!]}
-              >
-                <circle
-                  r={settings.zipDotSize}
-                  fill={settings.zipDotColor}
-                  stroke="none"
-                  style={{ pointerEvents: "none" }}
-                />
-              </Marker>
-            ))}
-
-        {flowRoutes.length > 0 && (
-          <FlowLayer
-            routes={flowRoutes}
-            arrowStyle={flowSettings.arrowStyle}
-            flowOpacity={flowSettings.flowOpacity}
-            flowWidthScale={flowSettings.flowWidthScale}
-            showLabels={flowSettings.showFlowLabels}
-            onHover={(route) => {
-              setHoveredFlowRoute(route);
-              if (route) {
-                setTooltip(null);
-                setHoveredState(null);
+        <g transform={`translate(${zx},${zy}) scale(${zk})`}>
+          {topoData && (
+            <Geographies geography={topoData}>
+              {({ geographies }) =>
+                geographies
+                  .filter(
+                    (geo) => !excludedRegions.has(geo.properties.name as string),
+                  )
+                  .map((geo) => {
+                    const abbr =
+                      STATE_NAME_TO_ABBR[geo.properties.name as string];
+                    const fill =
+                      filters.showChoropleth && colorScale && abbr
+                        ? getStateColor(abbr, stateVolumes, colorScale)
+                        : defaultStateFill;
+                    const hoverFill = filters.showChoropleth
+                      ? fill
+                      : defaultStateHover;
+                    return (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        style={{
+                          default: {
+                            fill,
+                            stroke: stateStroke,
+                            strokeWidth: 0.5 / zk,
+                            outline: "none",
+                          },
+                          hover: {
+                            fill: hoverFill,
+                            stroke: stateStroke,
+                            strokeWidth: 0.5 / zk,
+                            outline: "none",
+                          },
+                          pressed: { outline: "none" },
+                        }}
+                        onMouseEnter={() => {
+                          if (abbr && stateDetailsMap[abbr])
+                            setHoveredState({
+                              name: geo.properties.name as string,
+                              abbr,
+                            });
+                        }}
+                        onMouseLeave={() => setHoveredState(null)}
+                      />
+                    );
+                  })
               }
-            }}
-          />
-        )}
+            </Geographies>
+          )}
 
-        {settings.showDcMarkers &&
-          dcRecords.map((r) => (
-            <DcMarker
-              key={`${r.customerKey}-${r.zip}`}
-              record={r}
-              onHover={(record) => {
-                setTooltip(record);
-                if (record) setHoveredFlowRoute(null);
+          {settings.showZipDots &&
+            dcRecords
+              .filter((r) => r.lat != null && r.lon != null)
+              .map((r) => (
+                <Marker
+                  key={`dot-${r.customerKey}-${r.zip}`}
+                  coordinates={[r.lon!, r.lat!]}
+                >
+                  <circle
+                    r={settings.zipDotSize / zk}
+                    fill={settings.zipDotColor}
+                    stroke="none"
+                    style={{ pointerEvents: "none" }}
+                  />
+                </Marker>
+              ))}
+
+          {flowRoutes.length > 0 && (
+            <FlowLayer
+              routes={flowRoutes}
+              arrowStyle={flowSettings.arrowStyle}
+              flowOpacity={flowSettings.flowOpacity}
+              flowWidthScale={flowSettings.flowWidthScale}
+              showLabels={flowSettings.showFlowLabels}
+              onHover={(route) => {
+                setHoveredFlowRoute(route);
+                if (route) {
+                  setTooltip(null);
+                  setHoveredState(null);
+                }
               }}
-              offset={markerOffsets.get(`${r.customerKey}-${r.zip}`)}
-              logoScale={settings.dcLogoScale}
-              logoPadding={settings.logoPadding}
             />
-          ))}
+          )}
+
+          {settings.showDcMarkers &&
+            dcRecords.map((r) => (
+              <DcMarker
+                key={`${r.customerKey}-${r.zip}`}
+                record={r}
+                onHover={(record) => {
+                  setTooltip(record);
+                  if (record) setHoveredFlowRoute(null);
+                }}
+                offset={markerOffsets.get(`${r.customerKey}-${r.zip}`)}
+                logoScale={settings.dcLogoScale}
+                logoPadding={settings.logoPadding}
+              />
+            ))}
+        </g>
       </ComposableMap>
 
       {hoveredFlowRoute ? (
