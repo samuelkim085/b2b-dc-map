@@ -1,62 +1,124 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
-@import './styles/bloomberg.css';
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap");
+@import "./styles/bloomberg.css";
 
 .app-shell {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .app-body {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.panel-resizer {
+    width: 8px;
+    flex-shrink: 0;
+    cursor: col-resize;
+    background: linear-gradient(
+        to right,
+        transparent 0,
+        transparent 3px,
+        var(--line) 3px,
+        var(--line) 5px,
+        transparent 5px,
+        transparent 100%
+    );
+}
+
+.panel-resizer:hover {
+    background: linear-gradient(
+        to right,
+        transparent 0,
+        transparent 2px,
+        var(--accent) 2px,
+        var(--accent) 6px,
+        transparent 6px,
+        transparent 100%
+    );
 }
 
 .loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  color: var(--muted);
-  font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    color: var(--muted);
+    font-family: "IBM Plex Mono", monospace;
 }
 
 .export-group {
-  display: flex;
-  gap: 6px;
+    display: flex;
+    gap: 6px;
 }
 
 .export-btn {
-  background: var(--panel-soft);
-  border: 1px solid var(--line);
-  color: var(--text);
-  font-family: inherit;
-  font-size: 11px;
-  padding: 4px 10px;
-  cursor: pointer;
-  letter-spacing: 0.05em;
+    background: var(--panel-soft);
+    border: 1px solid var(--line);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
 }
 
-.export-btn:hover { border-color: var(--accent); color: var(--accent); }
+.export-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
 
 .app-bar {
-  height: 40px;
-  background: var(--panel);
-  border-bottom: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  flex-shrink: 0;
+    height: 40px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    flex-shrink: 0;
 }
 
 .app-bar-title {
-  font-size: 12px;
-  font-weight: bold;
-  color: var(--accent);
-  letter-spacing: 0.12em;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+}
+
+.app-bar-mode-toggle {
+    display: flex;
+    gap: 2px;
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.mode-btn {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    padding: 3px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    opacity: 0.5;
+    transition: opacity 0.15s, background 0.15s;
+    font-family: inherit;
+}
+
+.mode-btn.active {
+    background: var(--accent);
+    color: var(--bg);
+    opacity: 1;
+}
+
+.mode-btn:hover:not(.active) {
+    opacity: 0.8;
 }
