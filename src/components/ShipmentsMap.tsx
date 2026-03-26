@@ -32,7 +32,12 @@ import { buildFlowRoutes } from "../utils/flows";
 import { computeMarkerOffsets } from "../utils/markerLayout";
 import type { LandGrid } from "../utils/markerLayout";
 import { buildLandGrid } from "../utils/buildLandGrid";
+import zipCentroidsRaw from "../data/zip-centroids.json";
 import "./ShipmentsMap.css";
+
+const zipCentroids = zipCentroidsRaw as Record<string, { lat: number; lon: number }>;
+const B2C_ZIP_DOTS_URL = "/data/b2c_top100_postal_qty.json";
+const B2C_CITY_DOTS_URL = "/data/b2c_top100_city_qty.json";
 
 const ComposableMap = _ComposableMap as React.ForwardRefExoticComponent<
   ComposableMapProps & React.RefAttributes<SVGSVGElement>
@@ -135,6 +140,8 @@ export function ShipmentsMap({
   );
   const [usLandFeature, setUsLandFeature] = useState<object | null>(null);
   const [landGrid, setLandGrid] = useState<LandGrid | null>(null);
+  const [b2cZipDots, setB2cZipDots] = useState<Array<{ zip: string; lat: number; lon: number; qty: number }>>([]);
+  const [b2cCityDots, setB2cCityDots] = useState<Array<{ city: string; state: string; qty: number; zip: string; lat: number; lon: number }>>([]);
   const [zoomXform, setZoomXform] = useState({ x: 0, y: 0, k: 1 });
   const selectedOrigin = useMemo(
     () =>
@@ -170,6 +177,34 @@ export function ShipmentsMap({
       })
       .catch(() => {
         console.warn("[ShipmentsMap] Failed to fetch countries TopoJSON");
+      });
+
+    fetch(B2C_ZIP_DOTS_URL)
+      .then((r) => r.json())
+      .then((data: Array<{ zip: string; qty: number }>) => {
+        const dots = data.flatMap((entry) => {
+          const centroid = zipCentroids[entry.zip];
+          if (!centroid) return [];
+          return [{ zip: entry.zip, lat: centroid.lat, lon: centroid.lon, qty: entry.qty }];
+        });
+        setB2cZipDots(dots);
+      })
+      .catch(() => {
+        console.warn("[ShipmentsMap] Failed to fetch B2C zip dots");
+      });
+
+    fetch(B2C_CITY_DOTS_URL)
+      .then((r) => r.json())
+      .then((data: Array<{ city: string; state: string; qty: number; zip: string }>) => {
+        const dots = data.flatMap((entry) => {
+          const centroid = zipCentroids[entry.zip];
+          if (!centroid) return [];
+          return [{ ...entry, lat: centroid.lat, lon: centroid.lon }];
+        });
+        setB2cCityDots(dots);
+      })
+      .catch(() => {
+        console.warn("[ShipmentsMap] Failed to fetch B2C city dots");
       });
   }, []);
 
@@ -495,6 +530,28 @@ export function ShipmentsMap({
                   />
                 </Marker>
               ))}
+
+          {dataMode === 'b2c' && b2cZipDots.map((dot) => (
+            <Marker key={`b2c-dot-${dot.zip}`} coordinates={[dot.lon, dot.lat]}>
+              <circle
+                r={3 / zk}
+                fill="#000000"
+                stroke="none"
+                style={{ pointerEvents: "none" }}
+              />
+            </Marker>
+          ))}
+
+          {dataMode === 'b2c' && settings.showB2cCityDots && b2cCityDots.map((dot) => (
+            <Marker key={`b2c-city-${dot.zip}`} coordinates={[dot.lon, dot.lat]}>
+              <circle
+                r={4 / zk}
+                fill="#000000"
+                stroke="none"
+                style={{ pointerEvents: "none" }}
+              />
+            </Marker>
+          ))}
 
           {dataMode === 'b2b' && flowRoutes.length > 0 && (
             <FlowLayer
