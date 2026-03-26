@@ -30,6 +30,7 @@ type SectionKey =
   | "dcLocations"
   | "radiusRing"
   | "flowLayer"
+  | "b2cLayers"
   | "appearance"
   | "mapView"
   | "markerStyle"
@@ -44,6 +45,7 @@ const DEFAULT_SECTION_STATE: SectionState = {
   dcLocations: true,
   radiusRing: false,
   flowLayer: true,
+  b2cLayers: true,
   appearance: false,
   mapView: false,
   markerStyle: false,
@@ -651,6 +653,27 @@ export function FilterPanel({
           />
         </div>
       </PanelSection>}
+
+      {dataMode === 'b2c' && (
+        <PanelSection
+          title="B2C Layers"
+          sectionKey="b2cLayers"
+          isOpen={sectionState.b2cLayers}
+          onToggle={toggleSection}
+        >
+          <div className="filter-group">
+            <label className="filter-row">
+              <span className="filter-label">TOP 100 CITIES</span>
+              <input
+                type="checkbox"
+                className="filter-toggle"
+                checked={settings.showB2cCityDots}
+                onChange={(e) => setApp("showB2cCityDots", e.target.checked)}
+              />
+            </label>
+          </div>
+        </PanelSection>
+      )}
 
       <PanelSection
         title="Appearance"
