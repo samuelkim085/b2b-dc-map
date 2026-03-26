@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import * as topojson from "topojson-client";
-import { zoom as d3zoom } from 'd3-zoom'
-import { select } from 'd3-selection'
+import { geoCentroid, geoCircle, geoPath } from "d3-geo";
+import { zoom as d3zoom } from "d3-zoom";
+import { select } from "d3-selection";
 import {
   ComposableMap as _ComposableMap,
   Geographies,
   Geography,
   Marker,
+  useMapContext,
 } from "react-simple-maps";
 import type { ComposableMapProps } from "react-simple-maps";
 import { DcMarker } from "./DcMarker";
@@ -37,6 +39,13 @@ const ComposableMap = _ComposableMap as React.ForwardRefExoticComponent<
 >;
 
 const GEO_URL = "/data/states-10m.json";
+const COUNTRIES_GEO_URL = "/data/countries-110m.json";
+const LOWER_48_PROJECTION_CONFIG = {
+  center: [0, 38.7] as [number, number],
+  rotate: [96, 0, 0] as [number, number, number],
+  parallels: [29.5, 45.5] as [number, number],
+  scale: 950,
+};
 
 interface Props {
   records: DcRecord[];
@@ -44,6 +53,62 @@ interface Props {
   flowSettings: FlowSettings;
   settings: AppSettings;
   svgRef: React.RefObject<SVGSVGElement | null>;
+  dataMode: 'b2b' | 'b2c';
+  b2cVolumes: Record<string, number>;
+}
+
+function OriginRadiusRing({
+  fillFeature,
+  strokeFeature,
+  fillOpacity,
+  zoomK,
+  onMouseEnter,
+  onMouseLeave,
+  onMouseMove,
+}: {
+  fillFeature: GeoJSON.Feature<GeoJSON.Polygon>;
+  strokeFeature: GeoJSON.Feature<GeoJSON.LineString>;
+  fillOpacity: number;
+  zoomK: number;
+  onMouseEnter?: (e: React.MouseEvent) => void;
+  onMouseLeave?: (e: React.MouseEvent) => void;
+  onMouseMove?: (e: React.MouseEvent) => void;
+}) {
+  const { projection } = useMapContext();
+  const fillD = useMemo(() => {
+    const path = geoPath(projection);
+    return path(fillFeature) ?? "";
+  }, [fillFeature, projection]);
+  const strokeD = useMemo(() => {
+    const path = geoPath(projection);
+    return path(strokeFeature) ?? "";
+  }, [projection, strokeFeature]);
+
+  if (!fillD || !strokeD) return null;
+
+  return (
+    <g
+      className="origin-radius-ring"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onMouseMove={onMouseMove}
+      style={{ cursor: onMouseEnter ? "pointer" : "default" }}
+    >
+      <path
+        d={fillD}
+        fill={`rgba(95, 126, 166, ${fillOpacity})`}
+        stroke="none"
+      />
+      <path
+        d={strokeD}
+        fill="none"
+        stroke="rgba(95, 126, 166, 0.9)"
+        strokeWidth={1.8 / zoomK}
+        strokeDasharray="10 8"
+        style={{ pointerEvents: "none" }}
+      />
+    </g>
+  );
 }
 
 export function ShipmentsMap({
@@ -52,6 +117,8 @@ export function ShipmentsMap({
   flowSettings,
   settings,
   svgRef,
+  dataMode,
+  b2cVolumes,
 }: Props) {
   const [tooltip, setTooltip] = useState<DcRecord | null>(null);
   const [hoveredFlowRoute, setHoveredFlowRoute] = useState<FlowRoute | null>(
@@ -61,15 +128,25 @@ export function ShipmentsMap({
     name: string;
     abbr: string;
   } | null>(null);
+  const [hoveredRadiusRing, setHoveredRadiusRing] = useState<boolean>(false);
   const [topoData, setTopoData] = useState<object | null>(null);
+  const [countriesTopoData, setCountriesTopoData] = useState<object | null>(
+    null,
+  );
   const [usLandFeature, setUsLandFeature] = useState<object | null>(null);
   const [landGrid, setLandGrid] = useState<LandGrid | null>(null);
-  const [zoomXform, setZoomXform] = useState({ x: 0, y: 0, k: 1 })
+  const [zoomXform, setZoomXform] = useState({ x: 0, y: 0, k: 1 });
   const selectedOrigin = useMemo(
     () =>
       KNOWN_ORIGINS.find((origin) => origin.zip === filters.originZip) ??
       KNOWN_ORIGINS[0],
     [filters.originZip],
+  );
+  const radiusCenterOrigin = useMemo(
+    () =>
+      KNOWN_ORIGINS.find((origin) => origin.zip === filters.radiusCenterZip) ??
+      selectedOrigin,
+    [filters.radiusCenterZip, selectedOrigin],
   );
 
   useEffect(() => {
@@ -85,26 +162,41 @@ export function ShipmentsMap({
       .catch(() => {
         console.warn("[ShipmentsMap] Failed to fetch TopoJSON");
       });
+
+    fetch(COUNTRIES_GEO_URL)
+      .then((r) => r.json())
+      .then((topo) => {
+        setCountriesTopoData(topo);
+      })
+      .catch(() => {
+        console.warn("[ShipmentsMap] Failed to fetch countries TopoJSON");
+      });
   }, []);
 
   useEffect(() => {
-    if (!svgRef.current) return
-    const svgEl = svgRef.current
-    const svg = select(svgEl)
+    if (!svgRef.current) return;
+    const svgEl = svgRef.current;
+    const svg = select(svgEl);
     const zoomBehavior = d3zoom<SVGSVGElement, unknown>()
       .scaleExtent([1, 8])
-      .on('zoom', (event) => {
-        const { x, y, k } = event.transform
-        setZoomXform({ x, y, k })
+      .wheelDelta((event) => {
+        const modeFactor =
+          event.deltaMode === 1 ? 0.05 : event.deltaMode === 2 ? 1 : 0.002;
+        const ctrlFactor = event.ctrlKey ? 0.22 : 0.65;
+        return -event.deltaY * modeFactor * ctrlFactor;
       })
-    svg.call(zoomBehavior)
-    const preventScroll = (e: WheelEvent) => e.preventDefault()
-    svgEl.addEventListener('wheel', preventScroll, { passive: false })
+      .on("zoom", (event) => {
+        const { x, y, k } = event.transform;
+        setZoomXform({ x, y, k });
+      });
+    svg.call(zoomBehavior);
+    const preventScroll = (e: WheelEvent) => e.preventDefault();
+    svgEl.addEventListener("wheel", preventScroll, { passive: false });
     return () => {
-      svg.on('.zoom', null)
-      svgEl.removeEventListener('wheel', preventScroll)
-    }
-  }, [])
+      svg.on(".zoom", null);
+      svgEl.removeEventListener("wheel", preventScroll);
+    };
+  }, [svgRef]);
 
   const excludedRegions = useMemo(() => {
     const s = new Set<string>();
@@ -151,6 +243,29 @@ export function ShipmentsMap({
     () => buildFlowRoutes(dcRecords, selectedOrigin, flowSettings),
     [dcRecords, selectedOrigin, flowSettings],
   );
+  const originRadiusRing = useMemo(() => {
+    const radiusDegrees = (filters.radiusMiles / 3958.8) * (180 / Math.PI);
+    const ringPolygon = geoCircle()
+      .center([radiusCenterOrigin.lon, radiusCenterOrigin.lat])
+      .radius(radiusDegrees)();
+    const ringCoordinates = ringPolygon.coordinates[0].slice(0, -1);
+
+    return {
+      fillFeature: {
+        type: "Feature" as const,
+        properties: {},
+        geometry: ringPolygon,
+      },
+      strokeFeature: {
+        type: "Feature" as const,
+        properties: {},
+        geometry: {
+          type: "LineString" as const,
+          coordinates: ringCoordinates,
+        },
+      },
+    };
+  }, [filters.radiusMiles, radiusCenterOrigin]);
   const markerOffsets = useMemo(
     () =>
       computeMarkerOffsets(
@@ -170,10 +285,11 @@ export function ShipmentsMap({
     ],
   );
 
-  const stateVolumes = useMemo(
-    () => (filters.showChoropleth ? buildStateVolumes(choroplethRecords) : {}),
-    [choroplethRecords, filters.showChoropleth],
-  );
+  const stateVolumes = useMemo(() => {
+    if (!filters.showChoropleth) return {};
+    if (dataMode === 'b2c') return b2cVolumes;
+    return buildStateVolumes(choroplethRecords);
+  }, [choroplethRecords, filters.showChoropleth, dataMode, b2cVolumes]);
 
   const colorScale = useMemo(
     () =>
@@ -189,23 +305,123 @@ export function ShipmentsMap({
   const defaultStateFill = "var(--map-state-default, #e8edf2)";
   const defaultStateHover = "var(--map-state-hover, #d0d8e4)";
   const stateStroke = "var(--map-state-stroke, #808080)";
+  const panamaFill =
+    filters.showChoropleth && colorScale
+      ? getStateColor("", { PA: 0 }, colorScale)
+      : defaultStateFill;
+  const mapProjection = settings.showPanamaExtent
+    ? "geoMercator"
+    : filters.showOriginRadiusRing
+      ? "geoConicEqualArea"
+      : "geoAlbersUsa";
+  const mapProjectionConfig = settings.showPanamaExtent
+    ? {
+        center: [settings.mapCenterLon, settings.mapCenterLat] as [
+          number,
+          number,
+        ],
+        scale: settings.mapScale,
+      }
+    : filters.showOriginRadiusRing
+      ? LOWER_48_PROJECTION_CONFIG
+      : undefined;
 
   const { x: zx, y: zy, k: zk } = zoomXform;
+
+  const radiusRingStats = useMemo(() => {
+    if (!filters.showOriginRadiusRing || !dcRecords) return null;
+
+    let totalPcs = 0;
+    let ringPcs = 0;
+
+    for (const record of dcRecords) {
+      if (record.lat == null || record.lon == null) continue;
+
+      totalPcs += record.pcs2025;
+
+      const distance = record.distances[filters.radiusCenterZip] ?? Infinity;
+      if (distance <= filters.radiusMiles) {
+        ringPcs += record.pcs2025;
+      }
+    }
+
+    if (totalPcs === 0) return null;
+
+    return {
+      pcs: ringPcs,
+      percent: ((ringPcs / totalPcs) * 100).toFixed(1),
+    };
+  }, [
+    filters.showOriginRadiusRing,
+    filters.radiusCenterZip,
+    filters.radiusMiles,
+    dcRecords,
+  ]);
 
   return (
     <div className="map-wrap">
       <ComposableMap
         ref={svgRef as React.RefObject<SVGSVGElement>}
-        projection="geoAlbersUsa"
+        projection={mapProjection}
+        projectionConfig={mapProjectionConfig}
+        className="shipments-map-svg"
         style={{ width: "100%", height: "100%" }}
       >
-        <g transform={`translate(${zx},${zy}) scale(${zk})`}>
+        <g
+          className="map-viewport"
+          transform={`translate(${zx},${zy}) scale(${zk})`}
+        >
+          {settings.showPanamaExtent && countriesTopoData && (
+            <Geographies geography={countriesTopoData}>
+              {({ geographies }) =>
+                geographies
+                  .filter((geo) => {
+                    const [lon, lat] = geoCentroid(geo);
+                    return lon >= -130 && lon <= -74 && lat >= 7 && lat <= 60;
+                  })
+                  .map((geo) => {
+                    const [lon, lat] = geoCentroid(geo);
+                    const isPanama =
+                      lon >= -82 && lon <= -77 && lat >= 7 && lat <= 10.5;
+
+                    return (
+                      <Geography
+                        key={`country-${geo.rsmKey}`}
+                        geography={geo}
+                        className={
+                          isPanama
+                            ? "country-geography country-geography--panama"
+                            : "country-geography"
+                        }
+                        style={{
+                          default: {
+                            fill: isPanama ? panamaFill : "#dce5da",
+                            stroke: "#8fa39a",
+                            strokeWidth: 0.45 / zk,
+                            outline: "none",
+                          },
+                          hover: {
+                            fill: isPanama ? panamaFill : "#dce5da",
+                            stroke: "#8fa39a",
+                            strokeWidth: 0.45 / zk,
+                            outline: "none",
+                          },
+                          pressed: { outline: "none" },
+                        }}
+                      />
+                    );
+                  })
+              }
+            </Geographies>
+          )}
+
           {topoData && (
             <Geographies geography={topoData}>
               {({ geographies }) =>
                 geographies
                   .filter(
-                    (geo) => !excludedRegions.has(geo.properties.name as string),
+                    (geo) =>
+                      !excludedRegions.has(geo.properties.name as string),
                   )
                   .map((geo) => {
                     const abbr =
@@ -221,6 +437,7 @@ export function ShipmentsMap({
                       <Geography
                         key={geo.rsmKey}
                         geography={geo}
+                        className="state-geography"
                         style={{
                           default: {
                             fill,
@@ -251,7 +468,18 @@ export function ShipmentsMap({
             </Geographies>
           )}
 
-          {settings.showZipDots &&
+          {dataMode === 'b2b' && filters.showOriginRadiusRing && (
+            <OriginRadiusRing
+              fillFeature={originRadiusRing.fillFeature}
+              strokeFeature={originRadiusRing.strokeFeature}
+              fillOpacity={filters.radiusFillOpacity}
+              zoomK={zk}
+              onMouseEnter={() => setHoveredRadiusRing(true)}
+              onMouseLeave={() => setHoveredRadiusRing(false)}
+            />
+          )}
+
+          {dataMode === 'b2b' && settings.showZipDots &&
             dcRecords
               .filter((r) => r.lat != null && r.lon != null)
               .map((r) => (
@@ -268,12 +496,13 @@ export function ShipmentsMap({
                 </Marker>
               ))}
 
-          {flowRoutes.length > 0 && (
+          {dataMode === 'b2b' && flowRoutes.length > 0 && (
             <FlowLayer
               routes={flowRoutes}
               arrowStyle={flowSettings.arrowStyle}
               flowOpacity={flowSettings.flowOpacity}
               flowWidthScale={flowSettings.flowWidthScale}
+              straightInlandLines={flowSettings.straightInlandLines}
               showLabels={flowSettings.showFlowLabels}
               k={zk}
               onHover={(route) => {
@@ -286,7 +515,7 @@ export function ShipmentsMap({
             />
           )}
 
-          {settings.showDcMarkers &&
+          {dataMode === 'b2b' && settings.showDcMarkers &&
             dcRecords.map((r) => (
               <DcMarker
                 key={`${r.customerKey}-${r.zip}`}
@@ -328,6 +557,14 @@ export function ShipmentsMap({
               {hoveredFlowRoute.from.label} → {hoveredFlowRoute.to.label}
             </span>
           )}
+        </div>
+      ) : hoveredRadiusRing && radiusRingStats ? (
+        <div className="map-tooltip">
+          <strong>{filters.radiusMiles} mi Radius</strong>
+          <span>Center: {radiusCenterOrigin.label}</span>
+          <div className="tooltip-divider" />
+          <span>{radiusRingStats.pcs.toLocaleString()} pcs</span>
+          <span>{radiusRingStats.percent}% of total volume</span>
         </div>
       ) : tooltip ? (
         <div className="map-tooltip">
