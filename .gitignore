@@ -29,3 +29,20 @@ dist-ssr
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Screenshots and smoke test images
+*.png
+*.jpeg
+*.jpg
+
+# Excel / binary data files
+*.xlsx
+*.xls
+
+# Playwright MCP runtime directory
+.playwright-mcp/
+
+# Local working data files (not needed in repo)
+pcs_by_state.csv
+pcs_by_state_2025.xlsx
+public/data/b2c_qty_by_state_2025.xlsx
