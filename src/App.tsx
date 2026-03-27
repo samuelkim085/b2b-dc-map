@@ -18,7 +18,7 @@ export default function App() {
   const { records, loading, error, allCustomers } = useShipmentsData();
   const { settings, setSettings } = useSettings();
   const [dataMode, setDataMode] = useState<'b2b' | 'b2c'>('b2b');
-  const { volumes: b2cVolumes } = useB2cData();
+  const { volumes: b2cVolumes, error: b2cError } = useB2cData();
   const [useDefaultDcCustomers, setUseDefaultDcCustomers] = useState(true);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dragStateRef = useRef<{ startX: number; startWidth: number } | null>(
@@ -44,6 +44,12 @@ export default function App() {
   useEffect(() => {
     applyTheme(settings.appTheme);
   }, [settings.appTheme]);
+
+  useEffect(() => {
+    if (b2cError) {
+      console.warn('[App] Failed to load B2C data:', b2cError);
+    }
+  }, [b2cError]);
 
   const defaultDcCustomers = useMemo(
     () =>
