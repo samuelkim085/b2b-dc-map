@@ -532,11 +532,11 @@ export function ShipmentsMap({
                 </Marker>
               ))}
 
-          {dataMode === 'b2c' && b2cZipDots.map((dot) => (
+          {dataMode === 'b2c' && settings.showB2cZipDots && b2cZipDots.map((dot) => (
             <Marker key={`b2c-dot-${dot.zip}`} coordinates={[dot.lon, dot.lat]}>
               <circle
                 r={3 / zk}
-                fill="#000000"
+                fill="var(--text, #ffffff)"
                 stroke="none"
                 style={{ pointerEvents: "none" }}
               />
@@ -547,7 +547,7 @@ export function ShipmentsMap({
             <Marker key={`b2c-city-${dot.zip}`} coordinates={[dot.lon, dot.lat]}>
               <circle
                 r={4 / zk}
-                fill="#000000"
+                fill="var(--text, #ffffff)"
                 stroke="none"
                 style={{ pointerEvents: "none" }}
               />

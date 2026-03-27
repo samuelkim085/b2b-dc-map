@@ -150,6 +150,7 @@ export interface AppSettings {
   showDcMarkers: boolean;
   showZipDots: boolean;
   showB2cCityDots: boolean;
+  showB2cZipDots: boolean;
   dcLogoScale: number;
   logoPadding: number;
   zipDotColor: string;
@@ -171,6 +172,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   showDcMarkers: true,
   showZipDots: false,
   showB2cCityDots: true,
+  showB2cZipDots: true,
   dcLogoScale: 1.0,
   logoPadding: 2,
   zipDotColor: "#ffffff",

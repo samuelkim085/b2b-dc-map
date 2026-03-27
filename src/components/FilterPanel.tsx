@@ -672,6 +672,17 @@ export function FilterPanel({
               />
             </label>
           </div>
+          <div className="filter-group">
+            <label className="filter-row">
+              <span className="filter-label">TOP 100 ZIP CODES</span>
+              <input
+                type="checkbox"
+                className="filter-toggle"
+                checked={settings.showB2cZipDots}
+                onChange={(e) => setApp("showB2cZipDots", e.target.checked)}
+              />
+            </label>
+          </div>
         </PanelSection>
       )}
 
