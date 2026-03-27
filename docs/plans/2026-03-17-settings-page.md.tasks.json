@@ -1,0 +1,14 @@
+{
+  "planPath": "docs/plans/2026-03-17-settings-page.md",
+  "tasks": [
+    {"id": 3, "subject": "Task 1: Add AppSettings type and useSettings hook", "status": "pending"},
+    {"id": 4, "subject": "Task 2: Add useTheme hook and themes.css", "status": "pending", "blockedBy": [3]},
+    {"id": 5, "subject": "Task 3: Wire settings and view state into App.tsx and AppBar.tsx", "status": "pending", "blockedBy": [3, 4]},
+    {"id": 6, "subject": "Task 4: Update choropleth.ts to accept theme parameter", "status": "pending", "blockedBy": [3]},
+    {"id": 7, "subject": "Task 5: Update ShipmentsMap to consume settings", "status": "pending", "blockedBy": [5, 6]},
+    {"id": 8, "subject": "Task 6: Update DcMarker to accept logoScale and logoPadding props", "status": "pending", "blockedBy": [7]},
+    {"id": 9, "subject": "Task 7: Build SettingsPage component", "status": "pending", "blockedBy": [5, 6, 7, 8]},
+    {"id": 10, "subject": "Task 8: Verify full flow and fix TypeScript errors", "status": "pending", "blockedBy": [9]}
+  ],
+  "lastUpdated": "2026-03-17"
+}

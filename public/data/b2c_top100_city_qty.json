@@ -1,0 +1,602 @@
+[
+  {
+    "city": "Chicago",
+    "state": "IL",
+    "qty": 4478,
+    "zip": "60618\r"
+  },
+  {
+    "city": "San Diego",
+    "state": "CA",
+    "qty": 4071,
+    "zip": "92130\r"
+  },
+  {
+    "city": "Portland",
+    "state": "OR",
+    "qty": 3530,
+    "zip": "97229\r"
+  },
+  {
+    "city": "Denver",
+    "state": "CO",
+    "qty": 3489,
+    "zip": "80238\r"
+  },
+  {
+    "city": "New York",
+    "state": "NY",
+    "qty": 3379,
+    "zip": "10023\r"
+  },
+  {
+    "city": "Minneapolis",
+    "state": "MN",
+    "qty": 3078,
+    "zip": "55446\r"
+  },
+  {
+    "city": "Pittsburgh",
+    "state": "PA",
+    "qty": 3033,
+    "zip": "15237\r"
+  },
+  {
+    "city": "San Antonio",
+    "state": "TX",
+    "qty": 2990,
+    "zip": "78254\r"
+  },
+  {
+    "city": "Austin",
+    "state": "TX",
+    "qty": 2953,
+    "zip": "78739\r"
+  },
+  {
+    "city": "Brooklyn",
+    "state": "NY",
+    "qty": 2901,
+    "zip": "11215\r"
+  },
+  {
+    "city": "Seattle",
+    "state": "WA",
+    "qty": 2886,
+    "zip": "98117\r"
+  },
+  {
+    "city": "Miami",
+    "state": "FL",
+    "qty": 2884,
+    "zip": "33156\r"
+  },
+  {
+    "city": "Los Angeles",
+    "state": "CA",
+    "qty": 2858,
+    "zip": "90049\r"
+  },
+  {
+    "city": "Houston",
+    "state": "TX",
+    "qty": 2841,
+    "zip": "77095\r"
+  },
+  {
+    "city": "Phoenix",
+    "state": "AZ",
+    "qty": 2682,
+    "zip": "85032\r"
+  },
+  {
+    "city": "Saint Paul",
+    "state": "MN",
+    "qty": 2539,
+    "zip": "55129\r"
+  },
+  {
+    "city": "Las Vegas",
+    "state": "NV",
+    "qty": 2509,
+    "zip": "89131\r"
+  },
+  {
+    "city": "Jacksonville",
+    "state": "FL",
+    "qty": 2488,
+    "zip": "32256\r"
+  },
+  {
+    "city": "Indianapolis",
+    "state": "IN",
+    "qty": 2473,
+    "zip": "46220\r"
+  },
+  {
+    "city": "Cincinnati",
+    "state": "OH",
+    "qty": 2412,
+    "zip": "45244\r"
+  },
+  {
+    "city": "Philadelphia",
+    "state": "PA",
+    "qty": 2261,
+    "zip": "19147\r"
+  },
+  {
+    "city": "Colorado Springs",
+    "state": "CO",
+    "qty": 2251,
+    "zip": "80908\r"
+  },
+  {
+    "city": "Buffalo",
+    "state": "NY",
+    "qty": 2129,
+    "zip": "14224\r"
+  },
+  {
+    "city": "Saint Louis",
+    "state": "MO",
+    "qty": 2101,
+    "zip": "63129\r"
+  },
+  {
+    "city": "Omaha",
+    "state": "NE",
+    "qty": 2035,
+    "zip": "68136\r"
+  },
+  {
+    "city": "Orlando",
+    "state": "FL",
+    "qty": 2002,
+    "zip": "32828\r"
+  },
+  {
+    "city": "Charlotte",
+    "state": "NC",
+    "qty": 1911,
+    "zip": "28277\r"
+  },
+  {
+    "city": "Tucson",
+    "state": "AZ",
+    "qty": 1876,
+    "zip": "85743\r"
+  },
+  {
+    "city": "Atlanta",
+    "state": "GA",
+    "qty": 1769,
+    "zip": "30327\r"
+  },
+  {
+    "city": "San Francisco",
+    "state": "CA",
+    "qty": 1748,
+    "zip": "94109\r"
+  },
+  {
+    "city": "Littleton",
+    "state": "CO",
+    "qty": 1737,
+    "zip": "80126\r"
+  },
+  {
+    "city": "Louisville",
+    "state": "KY",
+    "qty": 1721,
+    "zip": "40245\r"
+  },
+  {
+    "city": "Washington",
+    "state": "DC",
+    "qty": 1710,
+    "zip": "20003\r"
+  },
+  {
+    "city": "Kansas City",
+    "state": "MO",
+    "qty": 1656,
+    "zip": "64152\r"
+  },
+  {
+    "city": "Nashville",
+    "state": "TN",
+    "qty": 1653,
+    "zip": "37221\r"
+  },
+  {
+    "city": "Salt Lake City",
+    "state": "UT",
+    "qty": 1650,
+    "zip": "84105\r"
+  },
+  {
+    "city": "Columbus",
+    "state": "OH",
+    "qty": 1644,
+    "zip": "43221\r"
+  },
+  {
+    "city": "Cleveland",
+    "state": "OH",
+    "qty": 1606,
+    "zip": "44130\r"
+  },
+  {
+    "city": "Albuquerque",
+    "state": "NM",
+    "qty": 1599,
+    "zip": "87111\r"
+  },
+  {
+    "city": "Tampa",
+    "state": "FL",
+    "qty": 1540,
+    "zip": "33647\r"
+  },
+  {
+    "city": "Spokane",
+    "state": "WA",
+    "qty": 1508,
+    "zip": "99205\r"
+  },
+  {
+    "city": "Mesa",
+    "state": "AZ",
+    "qty": 1502,
+    "zip": "85212\r"
+  },
+  {
+    "city": "Sacramento",
+    "state": "CA",
+    "qty": 1459,
+    "zip": "95835\r"
+  },
+  {
+    "city": "Aurora",
+    "state": "CO",
+    "qty": 1413,
+    "zip": "80016\r"
+  },
+  {
+    "city": "Fort Lauderdale",
+    "state": "FL",
+    "qty": 1396,
+    "zip": "33317\r"
+  },
+  {
+    "city": "Virginia Beach",
+    "state": "VA",
+    "qty": 1380,
+    "zip": "23451\r"
+  },
+  {
+    "city": "Dallas",
+    "state": "TX",
+    "qty": 1376,
+    "zip": "75214\r"
+  },
+  {
+    "city": "Knoxville",
+    "state": "TN",
+    "qty": 1373,
+    "zip": "37922\r"
+  },
+  {
+    "city": "San Jose",
+    "state": "CA",
+    "qty": 1367,
+    "zip": "95125\r"
+  },
+  {
+    "city": "Rochester",
+    "state": "NY",
+    "qty": 1277,
+    "zip": "14617\r"
+  },
+  {
+    "city": "Gilbert",
+    "state": "AZ",
+    "qty": 1253,
+    "zip": "85298\r"
+  },
+  {
+    "city": "Milwaukee",
+    "state": "WI",
+    "qty": 1237,
+    "zip": "53213\r"
+  },
+  {
+    "city": "Alexandria",
+    "state": "VA",
+    "qty": 1179,
+    "zip": "22304\r"
+  },
+  {
+    "city": "Reno",
+    "state": "NV",
+    "qty": 1178,
+    "zip": "89521\r"
+  },
+  {
+    "city": "Wichita",
+    "state": "KS",
+    "qty": 1162,
+    "zip": "67226\r"
+  },
+  {
+    "city": "Fort Worth",
+    "state": "TX",
+    "qty": 1142,
+    "zip": "76179\r"
+  },
+  {
+    "city": "Henderson",
+    "state": "NV",
+    "qty": 1133,
+    "zip": "89012\r"
+  },
+  {
+    "city": "Dayton",
+    "state": "OH",
+    "qty": 1122,
+    "zip": "45459\r"
+  },
+  {
+    "city": "Irvine",
+    "state": "CA",
+    "qty": 1109,
+    "zip": "92618\r"
+  },
+  {
+    "city": "Raleigh",
+    "state": "NC",
+    "qty": 1100,
+    "zip": "27613\r"
+  },
+  {
+    "city": "El Paso",
+    "state": "TX",
+    "qty": 1088,
+    "zip": "79938\r"
+  },
+  {
+    "city": "Oklahoma City",
+    "state": "OK",
+    "qty": 1079,
+    "zip": "73142\r"
+  },
+  {
+    "city": "Fort Collins",
+    "state": "CO",
+    "qty": 1041,
+    "zip": "80525\r"
+  },
+  {
+    "city": "Sioux Falls",
+    "state": "SD",
+    "qty": 1035,
+    "zip": "57106\r"
+  },
+  {
+    "city": "Fort Wayne",
+    "state": "IN",
+    "qty": 1030,
+    "zip": "46845\r"
+  },
+  {
+    "city": "Scottsdale",
+    "state": "AZ",
+    "qty": 1001,
+    "zip": "85254\r"
+  },
+  {
+    "city": "Baltimore",
+    "state": "MD",
+    "qty": 970,
+    "zip": "21224\r"
+  },
+  {
+    "city": "Salem",
+    "state": "OR",
+    "qty": 966,
+    "zip": "97302\r"
+  },
+  {
+    "city": "Bronx",
+    "state": "NY",
+    "qty": 960,
+    "zip": "10462\r"
+  },
+  {
+    "city": "Vancouver",
+    "state": "WA",
+    "qty": 960,
+    "zip": "98682\r"
+  },
+  {
+    "city": "Grand Rapids",
+    "state": "MI",
+    "qty": 954,
+    "zip": "49546\r"
+  },
+  {
+    "city": "Madison",
+    "state": "WI",
+    "qty": 952,
+    "zip": "53711\r"
+  },
+  {
+    "city": "Arlington",
+    "state": "VA",
+    "qty": 945,
+    "zip": "22203\r"
+  },
+  {
+    "city": "Staten Island",
+    "state": "NY",
+    "qty": 942,
+    "zip": "10312\r"
+  },
+  {
+    "city": "Durham",
+    "state": "NC",
+    "qty": 902,
+    "zip": "27713\r"
+  },
+  {
+    "city": "Chandler",
+    "state": "AZ",
+    "qty": 897,
+    "zip": "85286\r"
+  },
+  {
+    "city": "Spring",
+    "state": "TX",
+    "qty": 896,
+    "zip": "77386\r"
+  },
+  {
+    "city": "Boise",
+    "state": "ID",
+    "qty": 888,
+    "zip": "83709\r"
+  },
+  {
+    "city": "Anchorage",
+    "state": "AK",
+    "qty": 871,
+    "zip": "99502\r"
+  },
+  {
+    "city": "Ann Arbor",
+    "state": "MI",
+    "qty": 840,
+    "zip": "48105\r"
+  },
+  {
+    "city": "Oakland",
+    "state": "CA",
+    "qty": 815,
+    "zip": "94611\r"
+  },
+  {
+    "city": "Akron",
+    "state": "OH",
+    "qty": 809,
+    "zip": "44321\r"
+  },
+  {
+    "city": "Tulsa",
+    "state": "OK",
+    "qty": 808,
+    "zip": "74133\r"
+  },
+  {
+    "city": "Georgetown",
+    "state": "TX",
+    "qty": 799,
+    "zip": "78628\r"
+  },
+  {
+    "city": "Meridian",
+    "state": "ID",
+    "qty": 799,
+    "zip": "83642\r"
+  },
+  {
+    "city": "Bradenton",
+    "state": "FL",
+    "qty": 798,
+    "zip": "34202\r"
+  },
+  {
+    "city": "Edmond",
+    "state": "OK",
+    "qty": 783,
+    "zip": "73034\r"
+  },
+  {
+    "city": "Honolulu",
+    "state": "HI",
+    "qty": 782,
+    "zip": "96818\r"
+  },
+  {
+    "city": "Arvada",
+    "state": "CO",
+    "qty": 779,
+    "zip": "80005\r"
+  },
+  {
+    "city": "Pompano Beach",
+    "state": "FL",
+    "qty": 770,
+    "zip": "33076\r"
+  },
+  {
+    "city": "Lexington",
+    "state": "KY",
+    "qty": 764,
+    "zip": "40503\r"
+  },
+  {
+    "city": "Ogden",
+    "state": "UT",
+    "qty": 758,
+    "zip": "84414\r"
+  },
+  {
+    "city": "Marietta",
+    "state": "GA",
+    "qty": 748,
+    "zip": "30066\r"
+  },
+  {
+    "city": "Parker",
+    "state": "CO",
+    "qty": 743,
+    "zip": "80134\r"
+  },
+  {
+    "city": "Erie",
+    "state": "PA",
+    "qty": 741,
+    "zip": "16509\r"
+  },
+  {
+    "city": "Naples",
+    "state": "FL",
+    "qty": 736,
+    "zip": "34120\r"
+  },
+  {
+    "city": "York",
+    "state": "PA",
+    "qty": 735,
+    "zip": "17402\r"
+  },
+  {
+    "city": "Fairfax",
+    "state": "VA",
+    "qty": 732,
+    "zip": "22032\r"
+  },
+  {
+    "city": "Lincoln",
+    "state": "NE",
+    "qty": 731,
+    "zip": "68516\r"
+  },
+  {
+    "city": "Fort Myers",
+    "state": "FL",
+    "qty": 729,
+    "zip": "33913"
+  }
+]

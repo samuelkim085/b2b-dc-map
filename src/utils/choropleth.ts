@@ -49,8 +49,16 @@ export function buildStateVolumes(records: DcRecord[]): Record<string, number> {
 export function buildColorScale(
   maxVol: number,
   theme: 'greens' | 'greys' = 'greys',
+  darkBg = false,
 ): ScaleSequential<string> {
-  const interpolator = theme === 'greens' ? interpolateGreens : interpolateGreys
+  const base = theme === 'greens' ? interpolateGreens : interpolateGreys
+  // On dark backgrounds: clamp to 0.7→0.0 range so that
+  //   t=0 (no data) → ~dark grey (~#4a4a4a), visible against black
+  //   t=1 (max vol) → white/near-white, most prominent
+  // On light backgrounds: full 0→1 range (white → dark grey, standard)
+  const interpolator = darkBg
+    ? (t: number) => base(0.7 * (1 - t))
+    : base
   return scaleSequential(interpolator).domain([0, Math.max(maxVol * 1.2, 1)])
 }
 
@@ -71,7 +79,7 @@ export function getStateColor(
   volumes: Record<string, number>,
   scale: ScaleSequential<string>
 ): string {
-  if (!stateAbbr) return 'var(--panel)'
+  if (!stateAbbr) return rgbToHex(scale(0))
   const vol = volumes[stateAbbr] ?? 0
   return rgbToHex(scale(vol))
 }

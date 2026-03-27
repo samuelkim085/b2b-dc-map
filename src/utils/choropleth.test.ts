@@ -32,18 +32,47 @@ describe('getStateColor', () => {
     expect(color).toMatch(/^#[0-9a-f]{6}$/i)
   })
 
-  it('returns CSS var fallback for unknown state', () => {
+  it('returns scale(0) hex for state with no volume data', () => {
     const scale = buildColorScale(100)
-    expect(getStateColor('AK', {}, scale)).toBe('var(--panel)')
+    const color = getStateColor('AK', {}, scale)
+    expect(color).toMatch(/^#[0-9a-f]{6}$/i)
   })
 
-  it('returns CSS var fallback for empty stateAbbr', () => {
+  it('returns scale(0) hex for empty stateAbbr', () => {
     const scale = buildColorScale(100)
-    expect(getStateColor('', { '': 100 }, scale)).toBe('var(--panel)')
+    expect(getStateColor('', { '': 100 }, scale)).toMatch(/^#[0-9a-f]{6}$/i)
   })
 
-  it('returns CSS var fallback when vol is null/missing', () => {
+  it('returns scale(0) hex for state missing from volumes', () => {
     const scale = buildColorScale(200000)
-    expect(getStateColor('MT', { TX: 100 }, scale)).toBe('var(--panel)')
+    const color = getStateColor('MT', { TX: 100 }, scale)
+    expect(color).toMatch(/^#[0-9a-f]{6}$/i)
+  })
+})
+
+describe('buildColorScale', () => {
+  it('light mode: scale(0) returns near-white color', () => {
+    const scale = buildColorScale(100000, 'greys', false)
+    const color = scale(0)
+    // greys interpolator at t=0 → white = rgb(255,255,255)
+    expect(color).toMatch(/^rgb\(255/)
+  })
+
+  it('darkBg mode: scale(0) is mid-grey (NOT white)', () => {
+    const scale = buildColorScale(100000, 'greys', true)
+    const color = scale(0)
+    // darkBg: base(0.7 * (1 - 0)) = base(0.7) ≈ mid-grey, not white
+    expect(color).not.toMatch(/^rgb\(255/)
+  })
+
+  it('darkBg mode: scale(maxVol) is lighter than scale(0) (most prominent)', () => {
+    const scale = buildColorScale(100000, 'greys', true)
+    const colorAtZero = scale(0)
+    const colorAtMax = scale(100000)
+    // darkBg inverts: high volume → lighter (more prominent on dark bg)
+    // Extract the first RGB channel to compare brightness
+    const rAtZero = parseInt(colorAtZero.match(/\d+/)![0], 10)
+    const rAtMax = parseInt(colorAtMax.match(/\d+/)![0], 10)
+    expect(rAtMax).toBeGreaterThan(rAtZero)
   })
 })

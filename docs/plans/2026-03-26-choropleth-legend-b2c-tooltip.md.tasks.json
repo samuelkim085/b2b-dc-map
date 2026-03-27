@@ -1,0 +1,10 @@
+{
+  "planPath": "docs/plans/2026-03-26-choropleth-legend-b2c-tooltip.md",
+  "tasks": [
+    {"id": 1, "subject": "Task 1: Fix B2C hover trigger", "status": "pending"},
+    {"id": 2, "subject": "Task 2: Fix B2C tooltip content", "status": "pending", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 3: Add ChoroplethLegend component", "status": "pending"},
+    {"id": 4, "subject": "Task 4: Manual smoke test", "status": "pending", "blockedBy": [1, 2, 3]}
+  ],
+  "lastUpdated": "2026-03-26T00:00:00Z"
+}

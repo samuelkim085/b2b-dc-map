@@ -16,10 +16,10 @@
   --btn-bg-hover: #2d3a4f;
 
   /* Map-specific */
-  --map-state-default: #1c2333;
-  --map-state-hover: #2d3a4f;
-  --map-state-stroke: #4a5d73;
-  --map-bg: #0f1117;
+  --map-state-default: #e8edf2;
+  --map-state-hover: #d0d8e4;
+  --map-state-stroke: #808080;
+  --map-bg: #ffffff;
 }
 
 [data-theme="light"] {

@@ -1,39 +1,70 @@
 .map-wrap {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  background: #ffffff;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  overflow: hidden;
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: var(--map-bg, #ffffff);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 .map-tooltip {
-  position: absolute;
-  background: var(--panel);
-  border: 1px solid var(--accent);
-  padding: 8px 12px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  color: var(--text);
-  pointer-events: none;
-  z-index: 10;
-  top: 16px;
-  right: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 160px;
+    position: absolute;
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    padding: 8px 12px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    color: var(--text);
+    pointer-events: none;
+    z-index: 10;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 160px;
 }
 
 .tooltip-divider {
-  border: none;
-  border-top: 1px solid var(--line);
-  margin: 4px 0;
+    border: none;
+    border-top: 1px solid var(--line);
+    margin: 4px 0;
 }
 
 .tooltip-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.flow-path {
+    cursor: pointer;
+    transition:
+        opacity 120ms ease,
+        stroke-width 120ms ease;
+}
+
+.flow-path:hover {
+    opacity: 1;
+    filter: drop-shadow(0 0 1.5px rgba(59, 87, 120, 0.35));
+}
+
+.flow-label {
+    fill: color-mix(in srgb, var(--text) 84%, #4f6480 16%);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 9px;
+    paint-order: stroke;
+    stroke: rgba(255, 255, 255, 0.92);
+    stroke-width: 2.25px;
+    stroke-linejoin: round;
+    letter-spacing: 0.01em;
+}
+
+.map-wrap svg {
+  cursor: grab;
+}
+
+.map-wrap svg:active {
+  cursor: grabbing;
 }

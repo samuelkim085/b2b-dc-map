@@ -1,0 +1,12 @@
+{
+  "planPath": "docs/plans/2026-03-26-b2b-b2c-toggle.md",
+  "tasks": [
+    {"id": 0, "subject": "Task 1: B2C CSV 배치 및 useB2cData 훅 작성", "status": "completed"},
+    {"id": 1, "subject": "Task 2: App.tsx에 dataMode 상태 추가", "status": "completed", "blockedBy": [0]},
+    {"id": 2, "subject": "Task 3: AppBar에 B2B/B2C 토글 버튼 추가", "status": "completed", "blockedBy": [1]},
+    {"id": 3, "subject": "Task 4: ShipmentsMap — B2C 모드 분기 처리", "status": "completed", "blockedBy": [1]},
+    {"id": 4, "subject": "Task 5: FilterPanel — B2C 모드에서 섹션 숨기기", "status": "completed", "blockedBy": [1]},
+    {"id": 5, "subject": "Task 6: 동작 검증", "status": "completed", "blockedBy": [2, 3, 4]}
+  ],
+  "lastUpdated": "2026-03-26T01:46:00Z"
+}

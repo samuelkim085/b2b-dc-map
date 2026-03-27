@@ -1,7 +1,6 @@
-import { geoAlbersUsa } from 'd3-geo'
+import { geoAlbersUsa, geoContains } from 'd3-geo'
 import { getLogoHalfDims } from './logoConfig'
 
-// Hierarchy: index 0 = highest priority (never moves), higher index = moves first.
 const PRIORITY_ORDER = ['WM', 'TG', 'Sally', 'Ulta', 'CVS', 'WG', 'HEB']
 
 function getPriority(key: string): number {
@@ -9,153 +8,208 @@ function getPriority(key: string): number {
   return i === -1 ? PRIORITY_ORDER.length : i
 }
 
-function aabbOverlaps(
-  ax: number, ay: number, ahw: number, ahh: number,
-  bx: number, by: number, bhw: number, bhh: number,
-): boolean {
-  return Math.abs(ax - bx) < ahw + bhw && Math.abs(ay - by) < ahh + bhh
+export const MAP_WIDTH  = 800
+export const MAP_SCALE  = 1070
+export const MAP_HEIGHT = 520
+
+/** Pre-rasterized land mask — 1 byte per pixel, 1 = land, 0 = water/outside. */
+export type LandGrid = { pixels: Uint8Array; width: number; height: number }
+
+const DAMPING            = 0.85
+const HOME_K             = 0.05
+const LOGO_REPULSION     = 2.5
+const DOT_REPULSION      = 4.0
+const SEPARATION_PADDING = 2
+const MAX_ITER           = 200
+const CONVERGENCE_EPS    = 0.05
+
+function isOnLandGrid(x: number, y: number, grid: LandGrid): boolean {
+  const gx = Math.round(x)
+  const gy = Math.round(y)
+  if (gx < 0 || gx >= grid.width || gy < 0 || gy >= grid.height) return false
+  return grid.pixels[gy * grid.width + gx] === 1
 }
 
-// react-simple-maps defaults for geoAlbersUsa
-const MAP_WIDTH = 800
-const MAP_HEIGHT = 600
-const MAP_SCALE = 1070
-
-// Extra gap (in SVG px) added between logos after they stop overlapping.
-// Increase to space them out more, decrease (min 0) to pack tighter.
-const SEPARATION_PADDING = 1
+function isOnLand(
+  x: number,
+  y: number,
+  projection: ReturnType<typeof geoAlbersUsa>,
+  usLandFeature?: object | null,
+  landGrid?: LandGrid | null,
+): boolean {
+  if (landGrid) return isOnLandGrid(x, y, landGrid)
+  const coord = projection.invert?.([x, y])
+  if (!coord) return false
+  if (usLandFeature) return geoContains(usLandFeature as Parameters<typeof geoContains>[0], coord)
+  return true
+}
 
 /**
- * Computes per-marker (dx, dy) SVG offsets so that no two markers overlap.
- * Higher-priority markers (WM > TG > … > HEB) stay fixed; lower-priority
- * ones are pushed radially outward. Chain reactions are resolved iteratively.
+ * Computes per-marker (dx, dy) SVG offsets using a force-directed physics loop.
  *
- * Returns a Map keyed by `${customerKey}-${zip}`.
+ * Forces per iteration:
+ *   1. Logo-logo AABB repulsion   — priority-ordered (high priority stays fixed)
+ *   2. Logo-zipDot repulsion      — all logos move away from all dot positions
+ *   3. Home spring attraction     — weak pull back toward projected DC coordinate
+ *
+ * After each velocity step, `isOnLand()` validates the new position. When
+ * `usLandFeature` is provided, it uses `geoContains()` against the actual US
+ * state polygons; otherwise it falls back to checking `projection.invert() != null`.
+ * Motion along any axis that leaves valid land is cancelled and velocity zeroed.
+ *
+ * @param records      DC records to place
+ * @param logoScale    scale factor applied to logo dimensions
+ * @param zipDotSize   radius of zip dot circles (0 = skip dot avoidance)
+ * @param usLandFeature  GeoJSON geometry/feature for land containment check;
+ *                       omit or pass null to fall back to projection bounds only
  */
 export function computeMarkerOffsets(
   records: Array<{ customerKey: string; lat: number | null; lon: number | null; zip: string }>,
   logoScale = 1.0,
+  zipDotSize = 0,
+  usLandFeature?: object | null,
+  landGrid?: LandGrid | null,
 ): Map<string, [number, number]> {
   const projection = geoAlbersUsa()
     .scale(MAP_SCALE)
-    .translate([MAP_WIDTH / 2, MAP_HEIGHT / 2])
+    .translate([MAP_WIDTH / 2, 300])
 
-  type Item = {
+  type Particle = {
     id: string
     key: string
-    px: number   // projected x (fixed)
-    py: number   // projected y (fixed)
-    dx: number   // accumulated offset
-    dy: number
+    px: number   // home x (projected, fixed)
+    py: number   // home y (projected, fixed)
+    x: number    // current x
+    y: number    // current y
+    vx: number
+    vy: number
     priority: number
   }
 
-  const items: Item[] = []
+  const particles: Particle[] = []
   for (const r of records) {
     if (r.lat == null || r.lon == null) continue
     const p = projection([r.lon, r.lat])
     if (!p) continue
-    items.push({
+    particles.push({
       id: `${r.customerKey}-${r.zip}`,
       key: r.customerKey,
       px: p[0], py: p[1],
-      dx: 0, dy: 0,
+      x:  p[0], y:  p[1],
+      vx: 0,    vy: 0,
       priority: getPriority(r.customerKey),
     })
   }
 
-  // Highest priority first → they never get pushed
-  items.sort((a, b) => a.priority - b.priority)
+  particles.sort((a, b) => a.priority - b.priority)
 
-  // Bounding box of all projected marker positions.
-  // Pushed markers are clamped to this box so they can't be displaced into
-  // the ocean or outside the continental US footprint.
-  let bboxMinX = Infinity, bboxMaxX = -Infinity
-  let bboxMinY = Infinity, bboxMaxY = -Infinity
-  for (const item of items) {
-    if (item.px < bboxMinX) bboxMinX = item.px
-    if (item.px > bboxMaxX) bboxMaxX = item.px
-    if (item.py < bboxMinY) bboxMinY = item.py
-    if (item.py > bboxMaxY) bboxMaxY = item.py
-  }
+  // Zip dot positions = deduplicated projected home coordinates of all records.
+  // Deduplication prevents duplicate DCs at the same ZIP from multiplying repulsion force.
+  const dotPositions = particles
+    .map(p => ({ x: p.px, y: p.py }))
+    .filter((d, idx, arr) => arr.findIndex(o => o.x === d.x && o.y === d.y) === idx)
 
-  const MAX_PASSES = 40
-
-  for (let pass = 0; pass < MAX_PASSES; pass++) {
-    let changed = false
-
-    for (let i = 0; i < items.length; i++) {
+  for (let iter = 0; iter < MAX_ITER; iter++) {
+    // ── 1. Logo-logo repulsion ────────────────────────────────────────────
+    for (let i = 0; i < particles.length; i++) {
       for (let j = 0; j < i; j++) {
-        const hi = items[j]   // higher (or equal) priority — stays put
-        const lo = items[i]   // lower priority — gets pushed
-
-        const hx = hi.px + hi.dx, hy = hi.py + hi.dy
-        const lx = lo.px + lo.dx, ly = lo.py + lo.dy
+        const hi = particles[j]   // higher priority (or equal, lower index)
+        const lo = particles[i]   // lower priority
 
         const [hhw, hhh] = getLogoHalfDims(hi.key, logoScale)
         const [lhw, lhh] = getLogoHalfDims(lo.key, logoScale)
 
-        if (!aabbOverlaps(hx, hy, hhw, hhh, lx, ly, lhw, lhh)) continue
+        const overlapX = (hhw + lhw + SEPARATION_PADDING) - Math.abs(lo.x - hi.x)
+        const overlapY = (hhh + lhh + SEPARATION_PADDING) - Math.abs(lo.y - hi.y)
 
-        // Direction: radially outward from hi → lo
-        let dirX = lx - hx
-        let dirY = ly - hy
-        const d = Math.sqrt(dirX * dirX + dirY * dirY)
+        if (overlapX <= 0 || overlapY <= 0) continue  // no overlap
 
-        if (d < 0.001) {
-          // Exactly same point — push downward by default
-          dirX = 0; dirY = 1
+        const dx = lo.x - hi.x
+        const dy = lo.y - hi.y
+        const d  = Math.sqrt(dx * dx + dy * dy)
+        const nx = d < 0.001 ? 0 : dx / d
+        const ny = d < 0.001 ? 1 : dy / d
+        const force = Math.min(overlapX, overlapY) * LOGO_REPULSION
+
+        if (hi.priority < lo.priority) {
+          // hi is genuinely higher priority — only lo moves
+          lo.vx += nx * force
+          lo.vy += ny * force
         } else {
-          dirX /= d; dirY /= d
+          // Equal priority — share the force
+          lo.vx += nx * force * 0.5
+          lo.vy += ny * force * 0.5
+          hi.vx -= nx * force * 0.5
+          hi.vy -= ny * force * 0.5
         }
-
-        // Minimum center-to-center distance for AABB separation along this direction.
-        // Two AABBs separate when |Δx| ≥ sumHW  OR  |Δy| ≥ sumHH.
-        // Moving along (dirX, dirY) achieves separation at:
-        //   dSep = min(sumHW / |dirX|, sumHH / |dirY|)
-        const sumHW = hhw + lhw
-        const sumHH = hhh + lhh
-        const cosA = Math.abs(dirX)
-        const sinA = Math.abs(dirY)
-
-        let dSep: number
-        if (cosA < 0.001)      dSep = sumHH / sinA
-        else if (sinA < 0.001) dSep = sumHW / cosA
-        else                   dSep = Math.min(sumHW / cosA, sumHH / sinA)
-
-        const push = dSep - d + SEPARATION_PADDING
-        if (push <= 0) continue
-
-        // Clamp the new position so no marker is pushed off the US landmass.
-        //
-        // Two-layer guard:
-        // 1. Global data bbox — keeps every marker within the bounding box of
-        //    all markers (all DC positions are on US land, so this box is safe).
-        // 2. Coastal direction guard — markers near the western coast (x < 150)
-        //    cannot move further west than their original projection; markers
-        //    near the southern coast (y > 460) cannot move further south; and
-        //    markers near the eastern coast (x > 640) cannot move further east.
-        //    This prevents chain-reaction pushes from displacing coastal DCs
-        //    into the ocean.
-        const rawX = lx + push * dirX
-        const rawY = ly + push * dirY
-        const coastMinX = lo.px < 150 ? lo.px : bboxMinX
-        const coastMaxX = lo.px > 640 ? lo.px : bboxMaxX
-        const coastMaxY = lo.py > 460 ? lo.py : bboxMaxY
-        const newX = Math.max(coastMinX, Math.min(coastMaxX, rawX))
-        const newY = Math.max(bboxMinY, Math.min(coastMaxY, rawY))
-        lo.dx = newX - lo.px
-        lo.dy = newY - lo.py
-        changed = true
       }
     }
 
-    if (!changed) break
+    // ── 2. Logo-zipDot repulsion ──────────────────────────────────────────
+    if (zipDotSize > 0) {
+      for (const p of particles) {
+        for (const dot of dotPositions) {
+          const [lhw, lhh] = getLogoHalfDims(p.key, logoScale)
+
+          // Closest point on logo AABB to dot center
+          const closestX = Math.max(p.x - lhw, Math.min(p.x + lhw, dot.x))
+          const closestY = Math.max(p.y - lhh, Math.min(p.y + lhh, dot.y))
+          const cdx = closestX - dot.x
+          const cdy = closestY - dot.y
+          const dist = Math.sqrt(cdx * cdx + cdy * cdy)
+
+          const minDist = zipDotSize + SEPARATION_PADDING
+          if (dist >= minDist) continue  // no overlap
+
+          const overlap = minDist - dist
+          const dx = p.x - dot.x
+          const dy = p.y - dot.y
+          const d  = Math.sqrt(dx * dx + dy * dy)
+          const nx = d < 0.001 ? 0 : dx / d
+          const ny = d < 0.001 ? 1 : dy / d
+
+          p.vx += nx * overlap * DOT_REPULSION
+          p.vy += ny * overlap * DOT_REPULSION
+        }
+      }
+    }
+
+    // ── 3. Home spring ────────────────────────────────────────────────────
+    for (const p of particles) {
+      p.vx += (p.px - p.x) * HOME_K
+      p.vy += (p.py - p.y) * HOME_K
+    }
+
+    // ── 4. Integrate + land constraint ───────────────────────────────────
+    let maxVel = 0
+    for (const p of particles) {
+      p.vx *= DAMPING
+      p.vy *= DAMPING
+
+      const newX = p.x + p.vx
+      const newY = p.y + p.vy
+
+      // Validate each axis independently
+      const bothOk = isOnLand(newX, newY, projection, usLandFeature, landGrid)
+      if (bothOk) {
+        p.x = newX
+        p.y = newY
+      } else {
+        const xOk = isOnLand(newX, p.y, projection, usLandFeature, landGrid)
+        const yOk = isOnLand(p.x, newY, projection, usLandFeature, landGrid)
+        if (xOk) p.x = newX; else p.vx = 0
+        if (yOk) p.y = newY; else p.vy = 0
+      }
+
+      maxVel = Math.max(maxVel, Math.sqrt(p.vx * p.vx + p.vy * p.vy))
+    }
+
+    if (maxVel < CONVERGENCE_EPS) break
   }
 
   const result = new Map<string, [number, number]>()
-  for (const item of items) {
-    result.set(item.id, [item.dx, item.dy])
+  for (const p of particles) {
+    result.set(p.id, [p.x - p.px, p.y - p.py])
   }
   return result
 }
