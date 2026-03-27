@@ -317,6 +317,7 @@ export function ShipmentsMap({
       },
     };
   }, [filters.radiusMiles, radiusCenterOrigin]);
+  const useAlbersProjection = !settings.showPanamaExtent && !filters.showOriginRadiusRing;
   const markerOffsets = useMemo(
     () =>
       useAlbersProjection
@@ -369,7 +370,6 @@ export function ShipmentsMap({
     : filters.showOriginRadiusRing
       ? "geoConicEqualArea"
       : "geoAlbersUsa";
-  const useAlbersProjection = !settings.showPanamaExtent && !filters.showOriginRadiusRing;
   const mapProjectionConfig = settings.showPanamaExtent
     ? {
         center: [settings.mapCenterLon, settings.mapCenterLat] as [
