@@ -37,6 +37,9 @@ export function DcMarker({
   return (
     <Marker coordinates={[record.lon, record.lat] as [number, number]}>
       <g
+        className="dc-marker"
+        data-customer-key={record.customerKey}
+        data-zip={record.zip}
         transform={`translate(${offset[0] / k}, ${offset[1] / k}) scale(${1 / k})`}
         onMouseEnter={() => onHover(record)}
         onMouseLeave={() => onHover(null)}

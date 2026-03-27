@@ -8,8 +8,12 @@ function getPriority(key: string): number {
   return i === -1 ? PRIORITY_ORDER.length : i
 }
 
-const MAP_WIDTH  = 800
-const MAP_SCALE  = 1070
+export const MAP_WIDTH  = 800
+export const MAP_SCALE  = 1070
+export const MAP_HEIGHT = 520
+
+/** Pre-rasterized land mask — 1 byte per pixel, 1 = land, 0 = water/outside. */
+export type LandGrid = { pixels: Uint8Array; width: number; height: number }
 
 const DAMPING            = 0.85
 const HOME_K             = 0.05
@@ -19,12 +23,21 @@ const SEPARATION_PADDING = 2
 const MAX_ITER           = 200
 const CONVERGENCE_EPS    = 0.05
 
+function isOnLandGrid(x: number, y: number, grid: LandGrid): boolean {
+  const gx = Math.round(x)
+  const gy = Math.round(y)
+  if (gx < 0 || gx >= grid.width || gy < 0 || gy >= grid.height) return false
+  return grid.pixels[gy * grid.width + gx] === 1
+}
+
 function isOnLand(
   x: number,
   y: number,
   projection: ReturnType<typeof geoAlbersUsa>,
   usLandFeature?: object | null,
+  landGrid?: LandGrid | null,
 ): boolean {
+  if (landGrid) return isOnLandGrid(x, y, landGrid)
   const coord = projection.invert?.([x, y])
   if (!coord) return false
   if (usLandFeature) return geoContains(usLandFeature as Parameters<typeof geoContains>[0], coord)
@@ -55,6 +68,7 @@ export function computeMarkerOffsets(
   logoScale = 1.0,
   zipDotSize = 0,
   usLandFeature?: object | null,
+  landGrid?: LandGrid | null,
 ): Map<string, [number, number]> {
   const projection = geoAlbersUsa()
     .scale(MAP_SCALE)
@@ -176,13 +190,13 @@ export function computeMarkerOffsets(
       const newY = p.y + p.vy
 
       // Validate each axis independently
-      const bothOk = isOnLand(newX, newY, projection, usLandFeature)
+      const bothOk = isOnLand(newX, newY, projection, usLandFeature, landGrid)
       if (bothOk) {
         p.x = newX
         p.y = newY
       } else {
-        const xOk = isOnLand(newX, p.y, projection, usLandFeature)
-        const yOk = isOnLand(p.x, newY, projection, usLandFeature)
+        const xOk = isOnLand(newX, p.y, projection, usLandFeature, landGrid)
+        const yOk = isOnLand(p.x, newY, projection, usLandFeature, landGrid)
         if (xOk) p.x = newX; else p.vx = 0
         if (yOk) p.y = newY; else p.vy = 0
       }

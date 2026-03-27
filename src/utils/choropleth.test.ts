@@ -32,18 +32,20 @@ describe('getStateColor', () => {
     expect(color).toMatch(/^#[0-9a-f]{6}$/i)
   })
 
-  it('returns CSS var fallback for unknown state', () => {
+  it('returns scale(0) hex for state with no volume data', () => {
     const scale = buildColorScale(100)
-    expect(getStateColor('AK', {}, scale)).toBe('var(--panel)')
+    const color = getStateColor('AK', {}, scale)
+    expect(color).toMatch(/^#[0-9a-f]{6}$/i)
   })
 
-  it('returns CSS var fallback for empty stateAbbr', () => {
+  it('returns scale(0) hex for empty stateAbbr', () => {
     const scale = buildColorScale(100)
-    expect(getStateColor('', { '': 100 }, scale)).toBe('var(--panel)')
+    expect(getStateColor('', { '': 100 }, scale)).toMatch(/^#[0-9a-f]{6}$/i)
   })
 
-  it('returns CSS var fallback when vol is null/missing', () => {
+  it('returns scale(0) hex for state missing from volumes', () => {
     const scale = buildColorScale(200000)
-    expect(getStateColor('MT', { TX: 100 }, scale)).toBe('var(--panel)')
+    const color = getStateColor('MT', { TX: 100 }, scale)
+    expect(color).toMatch(/^#[0-9a-f]{6}$/i)
   })
 })

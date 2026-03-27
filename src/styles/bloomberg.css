@@ -45,10 +45,10 @@ input {
 
 /* Map-specific vars (bloomberg default) */
 :root {
-  --map-state-default: #1a1a1a;
-  --map-state-hover: #2a2a2a;
-  --map-state-stroke: #444444;
-  --map-bg: #000000;
+  --map-state-default: #e8edf2;
+  --map-state-hover: #d0d8e4;
+  --map-state-stroke: #808080;
+  --map-bg: #ffffff;
 }
 
 .app-bar-actions {
