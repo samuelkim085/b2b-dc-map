@@ -156,30 +156,42 @@ export function ShipmentsMap({
     [filters.radiusCenterZip, selectedOrigin],
   );
 
+  // Topology data — needed for map rendering and land constraint
   useEffect(() => {
-    fetch(GEO_URL)
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    fetch(GEO_URL, { signal })
       .then((r) => r.json())
       .then((topo) => {
         const feature = topojson.merge(topo, topo.objects.states.geometries);
-        // All three updates batched by React 18 → single re-render
         setTopoData(topo);
         setUsLandFeature(feature);
         setLandGrid(buildLandGrid(feature));
       })
-      .catch(() => {
-        console.warn("[ShipmentsMap] Failed to fetch TopoJSON");
+      .catch((err) => {
+        if ((err as Error).name !== 'AbortError')
+          console.warn("[ShipmentsMap] Failed to fetch TopoJSON");
       });
 
-    fetch(COUNTRIES_GEO_URL)
+    fetch(COUNTRIES_GEO_URL, { signal })
       .then((r) => r.json())
-      .then((topo) => {
-        setCountriesTopoData(topo);
-      })
-      .catch(() => {
-        console.warn("[ShipmentsMap] Failed to fetch countries TopoJSON");
+      .then((topo) => setCountriesTopoData(topo))
+      .catch((err) => {
+        if ((err as Error).name !== 'AbortError')
+          console.warn("[ShipmentsMap] Failed to fetch countries TopoJSON");
       });
 
-    fetch(B2C_ZIP_DOTS_URL)
+    return () => controller.abort();
+  }, []);
+
+  // B2C dot data — lazy load only when entering B2C mode
+  useEffect(() => {
+    if (dataMode !== 'b2c') return;
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    fetch(B2C_ZIP_DOTS_URL, { signal })
       .then((r) => r.json())
       .then((data: Array<{ zip: string; qty: number }>) => {
         const dots = data.flatMap((entry) => {
@@ -189,11 +201,12 @@ export function ShipmentsMap({
         });
         setB2cZipDots(dots);
       })
-      .catch(() => {
-        console.warn("[ShipmentsMap] Failed to fetch B2C zip dots");
+      .catch((err) => {
+        if ((err as Error).name !== 'AbortError')
+          console.warn("[ShipmentsMap] Failed to fetch B2C zip dots");
       });
 
-    fetch(B2C_CITY_DOTS_URL)
+    fetch(B2C_CITY_DOTS_URL, { signal })
       .then((r) => r.json())
       .then((data: Array<{ city: string; state: string; qty: number; zip: string }>) => {
         const dots = data.flatMap((entry) => {
@@ -203,10 +216,13 @@ export function ShipmentsMap({
         });
         setB2cCityDots(dots);
       })
-      .catch(() => {
-        console.warn("[ShipmentsMap] Failed to fetch B2C city dots");
+      .catch((err) => {
+        if ((err as Error).name !== 'AbortError')
+          console.warn("[ShipmentsMap] Failed to fetch B2C city dots");
       });
-  }, []);
+
+    return () => controller.abort();
+  }, [dataMode]);
 
   useEffect(() => {
     if (!svgRef.current) return;
