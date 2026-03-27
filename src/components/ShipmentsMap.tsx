@@ -319,14 +319,17 @@ export function ShipmentsMap({
   }, [filters.radiusMiles, radiusCenterOrigin]);
   const markerOffsets = useMemo(
     () =>
-      computeMarkerOffsets(
-        dcRecords,
-        settings.dcLogoScale,
-        settings.showZipDots ? settings.zipDotSize : 0,
-        usLandFeature,
-        landGrid,
-      ),
+      useAlbersProjection
+        ? computeMarkerOffsets(
+            dcRecords,
+            settings.dcLogoScale,
+            settings.showZipDots ? settings.zipDotSize : 0,
+            usLandFeature,
+            landGrid,
+          )
+        : new Map(),
     [
+      useAlbersProjection,
       dcRecords,
       settings.dcLogoScale,
       settings.showZipDots,
@@ -366,6 +369,7 @@ export function ShipmentsMap({
     : filters.showOriginRadiusRing
       ? "geoConicEqualArea"
       : "geoAlbersUsa";
+  const useAlbersProjection = !settings.showPanamaExtent && !filters.showOriginRadiusRing;
   const mapProjectionConfig = settings.showPanamaExtent
     ? {
         center: [settings.mapCenterLon, settings.mapCenterLat] as [
