@@ -49,3 +49,30 @@ describe('getStateColor', () => {
     expect(color).toMatch(/^#[0-9a-f]{6}$/i)
   })
 })
+
+describe('buildColorScale', () => {
+  it('light mode: scale(0) returns near-white color', () => {
+    const scale = buildColorScale(100000, 'greys', false)
+    const color = scale(0)
+    // greys interpolator at t=0 → white = rgb(255,255,255)
+    expect(color).toMatch(/^rgb\(255/)
+  })
+
+  it('darkBg mode: scale(0) is mid-grey (NOT white)', () => {
+    const scale = buildColorScale(100000, 'greys', true)
+    const color = scale(0)
+    // darkBg: base(0.7 * (1 - 0)) = base(0.7) ≈ mid-grey, not white
+    expect(color).not.toMatch(/^rgb\(255/)
+  })
+
+  it('darkBg mode: scale(maxVol) is lighter than scale(0) (most prominent)', () => {
+    const scale = buildColorScale(100000, 'greys', true)
+    const colorAtZero = scale(0)
+    const colorAtMax = scale(100000)
+    // darkBg inverts: high volume → lighter (more prominent on dark bg)
+    // Extract the first RGB channel to compare brightness
+    const rAtZero = parseInt(colorAtZero.match(/\d+/)![0], 10)
+    const rAtMax = parseInt(colorAtMax.match(/\d+/)![0], 10)
+    expect(rAtMax).toBeGreaterThan(rAtZero)
+  })
+})

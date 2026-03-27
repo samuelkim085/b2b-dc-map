@@ -332,9 +332,10 @@ export function ShipmentsMap({
         ? buildColorScale(
             Object.values(stateVolumes).reduce((max, v) => Math.max(max, v), 0),
             settings.choroplethTheme,
+            settings.appTheme !== 'light',
           )
         : null,
-    [stateVolumes, filters.showChoropleth, settings.choroplethTheme],
+    [stateVolumes, filters.showChoropleth, settings.choroplethTheme, settings.appTheme],
   );
 
   const defaultStateFill = "var(--map-state-default, #e8edf2)";
